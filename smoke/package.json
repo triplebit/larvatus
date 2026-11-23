@@ -1,0 +1,9 @@
+{
+  "name": "maskedemail-smoke",
+  "private": true,
+  "type": "module",
+  "description": "Browser smoke test for the built extension. The extension itself has no dependencies.",
+  "dependencies": {
+    "puppeteer": "23.11.1"
+  }
+}

@@ -54,6 +54,14 @@ Build both store packages from the project root. This also refreshes `masked-ema
 node scripts/build.mjs
 ```
 
+Run the end-to-end test of the Chrome build, which drives a headless Chromium against a fake Stalwart server. It installs Puppeteer under `smoke/`; set `CHROME_PATH` to use Chromium or Brave instead of Puppeteer's own Chrome.
+
+```sh
+npm --prefix smoke install && node smoke/chrome.mjs
+```
+
+`DEVELOPMENT.md` records design decisions and what is still untested. Read it before changing the code.
+
 The script writes `dist/firefox` and `dist/chrome` plus `dist/masked-email-<version>-firefox.zip` and `dist/masked-email-<version>-chrome.zip`. The Chrome manifest is derived from the Firefox one: a service worker instead of background scripts, the PNG icons in `extension/icons`, and no Firefox-only keys. Both browsers share the same code; `compat.js` maps `browser` to `chrome` where needed.
 
 ## Releases
