@@ -98,7 +98,10 @@
     entry.button.setAttribute("aria-busy", "true");
     try {
       const response = await browser.runtime.sendMessage({ action: "field-create" });
-      if (!response || response.error) throw new Error(response?.error || "MaskedEmail could not create an address.");
+      if (!response || response.error) {
+        const note = response?.type === "overQuota" ? " This quota can be configured by a Stalwart administrator in the admin dashboard." : "";
+        throw new Error((response?.error || "MaskedEmail could not create an address.") + note);
+      }
       fill(input, response.value.email);
       showTip(entry, "Masked address created and filled in.");
     } catch (error) {

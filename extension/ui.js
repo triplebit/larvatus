@@ -17,7 +17,9 @@ export const byId = id => document.getElementById(id);
 
 export async function send(action, args = {}) {
   const response = await browser.runtime.sendMessage({ action, ...args });
-  if (!response || response.error) throw new Error(response?.error || "The extension could not complete the request.");
+  if (!response || response.error) {
+    throw Object.assign(new Error(response?.error || "The extension could not complete the request."), { type: response?.type });
+  }
   return response.value;
 }
 

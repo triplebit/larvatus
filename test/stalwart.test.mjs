@@ -104,7 +104,7 @@ test("uses server-generated prefixes and patches only the delivery flag", async 
 
 test("propagates creation and toggle failures", async t => {
   jmap(t, () => ({ notCreated: { alias: { type: "overQuota" } }, notUpdated: { b: { type: "forbidden" } } }));
-  await assert.rejects(createAlias(connection, "", ""), /overQuota/);
+  await assert.rejects(createAlias(connection, "", ""), error => error.type === "overQuota" && /overQuota/.test(error.message));
   await assert.rejects(setEnabled(connection, "b", true), /forbidden/);
 });
 

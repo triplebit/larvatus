@@ -8,6 +8,7 @@ let aliases = [];
 let loaded = false;
 let busy = false;
 let justCreated = null;
+let quotaMessage = null;
 const dateFormat = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" });
 
 function copyable(button, email) {
@@ -22,12 +23,24 @@ function copyable(button, email) {
   return button;
 }
 
+const QUOTA_NOTE = "This quota can be configured by a Stalwart administrator in the admin dashboard.";
+
 // Stalwart addresses look like prefix.randomsuffix@domain; prefixes cannot contain dots.
 const prefixOf = email => email.toLowerCase().split("@")[0].split(".")[0];
 
 // The banner above the composer: the address just created, or existing ones that use the typed prefix.
 function renderSpotlight() {
   let title, emails;
+  const box = byId("spotlight");
+  box.classList.toggle("quota", !!quotaMessage);
+  if (quotaMessage) {
+    // Stalwart's own wording, which includes the account's limit.
+    box.hidden = false;
+    box.classList.remove("created");
+    byId("spotlight-title").textContent = quotaMessage;
+    byId("spotlight-list").replaceChildren(Object.assign(document.createElement("small"), { textContent: QUOTA_NOTE }));
+    return;
+  }
   if (justCreated) {
     title = "New alias created, click to copy:";
     emails = [justCreated];
@@ -36,7 +49,6 @@ function renderSpotlight() {
     emails = prefix && loaded ? aliases.filter(alias => prefixOf(alias.email) === prefix).map(alias => alias.email) : [];
     title = emails.length > 1 ? emails.length + " aliases with this prefix already exist:" : "An alias with this prefix already exists:";
   }
-  const box = byId("spotlight");
   box.hidden = !emails.length;
   box.classList.toggle("created", !!justCreated);
   byId("spotlight-title").textContent = title;
@@ -128,7 +140,17 @@ byId("reload").onclick = () => act(load);
 byId("composer").onsubmit = event => {
   event.preventDefault();
   act(async () => {
-    const created = await send("create", { key: account.key, prefix: byId("prefix").value.trim(), description: byId("description").value.trim() });
+    quotaMessage = null;
+    let created;
+    try {
+      created = await send("create", { key: account.key, prefix: byId("prefix").value.trim(), description: byId("description").value.trim() });
+    } catch (error) {
+      if (error.type !== "overQuota") throw error;
+      justCreated = null;
+      quotaMessage = error.message;
+      renderSpotlight();
+      return;
+    }
     byId("composer").reset();
     byId("search").value = "";
     justCreated = created.email || null;

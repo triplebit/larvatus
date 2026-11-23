@@ -161,7 +161,7 @@ browser.permissions.onAdded.addListener(async ({ origins = [] }) => {
 
 // One queue across all extension pages keeps rotating refresh tokens and account changes ordered.
 let queue = Promise.resolve();
-const reply = result => result.then(value => ({ value }), error => ({ error: error.message || "The request failed." }));
+const reply = result => result.then(value => ({ value }), error => ({ error: error.message || "The request failed.", type: error.type }));
 browser.runtime.onMessage.addListener((message, sender) => {
   if (sender.id !== browser.runtime.id) return;
   if (!sender.url?.startsWith(browser.runtime.getURL(""))) {

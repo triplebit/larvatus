@@ -122,8 +122,9 @@ export async function revoke(connection) {
   }
 }
 
+// Keeps the JMAP error type (for example "overQuota") so the popup can react to it.
 function problem(error) {
-  return new Error(error?.description || error?.type || "Unexpected JMAP response.");
+  return Object.assign(new Error(error?.description || error?.type || "Unexpected JMAP response."), { type: error?.type });
 }
 
 async function call(connection, verb, args) {
