@@ -13,14 +13,14 @@ async function handle(message) {
     await store.set({ connection: message.connection });
     return summary(message.connection);
   }
-  if (!connection || message.key !== connection.key) throw new Error("Your account changed. Reopen Alias Ledger.");
+  if (!connection || message.key !== connection.key) throw new Error("Your account changed. Reopen MaskedEmail.");
   if (message.action === "disconnect") {
     await store.remove("connection");
     try {
       await revoke(connection);
       return "Disconnected.";
     } catch {
-      return "Disconnected from Firefox. To revoke server access, remove Alias Ledger from your Stalwart connected applications.";
+      return "Disconnected from Firefox. To revoke server access, remove MaskedEmail from your Stalwart connected applications.";
     }
   }
 

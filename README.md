@@ -1,12 +1,12 @@
-# Alias Ledger
+# MaskedEmail
 
-A Firefox toolbar extension for Stalwart masked addresses. Create an address with a random or custom prefix, search by address or description, click an address to copy it, and switch delivery on or off. Stalwart generates the address and suffix. The list uses the native creation timestamp, newest first.
+A Firefox toolbar extension for Stalwart masked addresses. Create an address with a random or custom prefix, search by address or description, click an address to copy it, and switch delivery on or off. Stalwart generates the address and suffix. When the popup opens on a website, the prefix defaults to the site’s name (`google` for mail.google.com) and the description to “Created on mail.google.com”. Edit or clear either before creating. The list uses the native creation timestamp, newest first.
 
 ## Load in Firefox
 
 1. Open `about:debugging#/runtime/this-firefox` in Firefox 140 or later.
-2. Click **Load Temporary Add-on…** and select **alias-ledger.xpi**, or select **extension/manifest.json** to load the source.
-3. Open **Alias Ledger** from the extensions menu and click **Connect to Stalwart**. Pin it to the toolbar for quick access.
+2. Click **Load Temporary Add-on…** and select **masked-email.xpi**, or select **extension/manifest.json** to load the source.
+3. Open **MaskedEmail** from the extensions menu and click **Connect to Stalwart**. Pin it to the toolbar for quick access.
 4. Enter the canonical HTTPS address of your Stalwart server, allow Firefox to connect, then sign in and approve account settings access on Stalwart.
 
 The included package is unsigned. Firefox removes temporarily loaded extensions on restart. A permanent installation in standard Firefox requires Mozilla signing.
@@ -26,11 +26,11 @@ Stalwart accepts custom prefixes of up to 64 ASCII letters, digits, and undersco
 The extension uses plain HTML, CSS, and JavaScript and loads directly from the extension directory. Run the protocol tests with Node.js 22.7 or later.
 
 ```sh
-node --test test/stalwart.test.mjs
+node --test test/
 ```
 
 To rebuild the XPI from the project root:
 
 ```sh
-(cd extension && zip -q ../alias-ledger.xpi *.html *.css *.js *.json *.svg)
+(cd extension && zip -q ../masked-email.xpi *.html *.css *.js *.json *.svg)
 ```

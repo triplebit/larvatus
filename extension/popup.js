@@ -1,4 +1,5 @@
 import { byId, notice, send } from "./ui.js";
+import { siteDefaults } from "./site.js";
 
 let account;
 let aliases = [];
@@ -86,7 +87,17 @@ byId("composer").onsubmit = event => {
   });
 };
 
+// Prefill from the active tab. defaultValue makes the form's reset() restore these after each create.
+async function prefill() {
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+  const defaults = tab?.url && siteDefaults(tab.url);
+  if (!defaults) return;
+  byId("prefix").defaultValue = defaults.prefix;
+  byId("description").defaultValue = defaults.description;
+}
+
 async function start() {
+  prefill().catch(() => {});
   account = await send("status");
   notice();
   byId("welcome").hidden = !!account;

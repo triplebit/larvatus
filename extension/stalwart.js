@@ -64,7 +64,7 @@ export async function authorize(origin, identity) {
   const redirect = "http://127.0.0.1/mozoauth2/" + new URL(identity.getRedirectURL()).hostname.split(".")[0];
   const client = await request(endpoint(metadata.registration_endpoint, origin), {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ client_name: "Alias Ledger", redirect_uris: [redirect],
+    body: JSON.stringify({ client_name: "MaskedEmail", redirect_uris: [redirect],
       grant_types: ["authorization_code", "refresh_token"], response_types: ["code"],
       token_endpoint_auth_method: "none", scope: SETTINGS })
   });
