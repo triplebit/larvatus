@@ -103,7 +103,6 @@
         throw new Error((response?.error || "MaskedEmail could not create an address.") + note);
       }
       fill(input, response.value.email);
-      showTip(entry, "Masked address created and filled in.");
     } catch (error) {
       showTip(entry, error.message, true);
     } finally {

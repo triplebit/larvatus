@@ -58,13 +58,24 @@ async function exchange(connection, fields) {
     expires: result.expires_in ? Date.now() + result.expires_in * 1000 : null };
 }
 
-export async function authorize(origin, identity) {
+// Stalwart only accepts loopback redirects (or private-use schemes) for public clients.
+// Firefox's launchWebAuthFlow catches its own loopback form; on Chromium the background script
+// watches the sign-in tab for this address instead (see background.js).
+export const isChromium = extensionRedirect => new URL(extensionRedirect).hostname.endsWith(".chromiumapp.org");
+export function redirectUri(extensionRedirect) {
+  const url = new URL(extensionRedirect);
+  const id = url.hostname.split(".")[0];
+  return isChromium(extensionRedirect) ? "http://127.0.0.1/maskedemail-oauth/" + id : "http://127.0.0.1/mozoauth2/" + id;
+}
+
+// Discovers the server, registers a public client and builds the authorization URL. The result is
+// plain data, so it can wait in session storage while the person signs in.
+export async function prepareAuthorization(origin, redirect) {
   const metadata = await request(origin + "/.well-known/oauth-authorization-server");
   endpoint(metadata.issuer, origin);
   const authUrl = new URL(endpoint(metadata.authorization_endpoint, origin));
   const tokenUrl = endpoint(metadata.token_endpoint, origin);
   const revocationUrl = metadata.revocation_endpoint && endpoint(metadata.revocation_endpoint, origin);
-  const redirect = "http://127.0.0.1/mozoauth2/" + new URL(identity.getRedirectURL()).hostname.split(".")[0];
   const client = await request(endpoint(metadata.registration_endpoint, origin), {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ client_name: "MaskedEmail", redirect_uris: [redirect],
@@ -77,18 +88,30 @@ export async function authorize(origin, identity) {
   const challenge = base64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
   authUrl.search = new URLSearchParams({ client_id: client.client_id, redirect_uri: redirect,
     response_type: "code", scope: SETTINGS, state, code_challenge: challenge, code_challenge_method: "S256" });
-  const callback = new URL(await identity.launchWebAuthFlow({ interactive: true, url: authUrl.href }));
+  return { origin, issuer: metadata.issuer, checkIss: !!metadata.authorization_response_iss_parameter_supported,
+    clientId: client.client_id, tokenUrl, revocationUrl, redirect, state, verifier, authUrl: authUrl.href };
+}
+
+// Checks the redirect the server sent back and exchanges its code for tokens.
+export async function completeAuthorization(pending, callbackUrl) {
+  const callback = new URL(callbackUrl);
   const params = callback.searchParams;
-  if (callback.origin + callback.pathname !== redirect || params.get("state") !== state ||
-      ((metadata.authorization_response_iss_parameter_supported || params.has("iss")) && params.get("iss") !== metadata.issuer)) {
+  if (callback.origin + callback.pathname !== pending.redirect || params.get("state") !== pending.state ||
+      ((pending.checkIss || params.has("iss")) && params.get("iss") !== pending.issuer)) {
     throw new Error("Could not verify the sign-in response. Start sign-in again.");
   }
   if (params.has("error")) throw new Error(params.get("error_description") || params.get("error"));
   if (!params.get("code")) throw new Error("Sign-in ended without an authorization code.");
-  const connection = await exchange({ origin, clientId: client.client_id, tokenUrl, revocationUrl }, {
-    grant_type: "authorization_code", code: params.get("code"), redirect_uri: redirect, code_verifier: verifier
+  const connection = await exchange({ origin: pending.origin, clientId: pending.clientId, tokenUrl: pending.tokenUrl, revocationUrl: pending.revocationUrl }, {
+    grant_type: "authorization_code", code: params.get("code"), redirect_uri: pending.redirect, code_verifier: pending.verifier
   });
   return { ...connection, ...await session(connection), key: crypto.randomUUID() };
+}
+
+// Firefox: launchWebAuthFlow opens the sign-in window and returns the redirect it intercepted.
+export async function authorize(origin, identity) {
+  const pending = await prepareAuthorization(origin, redirectUri(identity.getRedirectURL()));
+  return completeAuthorization(pending, await identity.launchWebAuthFlow({ interactive: true, url: pending.authUrl }));
 }
 
 export async function session(connection) {

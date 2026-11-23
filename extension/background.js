@@ -1,6 +1,8 @@
+import "./compat.js";
 import { FIELD_ORIGINS, loadSettings } from "./options.js";
 import { siteDefaults } from "./site.js";
-import { PREFIX_PATTERN, authorize, createAlias, getAlias, hostPattern, listAliases, refresh, revoke, serverOrigin, session, setEnabled } from "./stalwart.js";
+import { PREFIX_PATTERN, authorize, completeAuthorization, createAlias, getAlias, hostPattern, isChromium, listAliases, prepareAuthorization,
+  redirectUri, refresh, revoke, serverOrigin, session, setEnabled } from "./stalwart.js";
 
 const store = browser.storage.local;
 function summary(connection) {
@@ -29,7 +31,7 @@ async function handle(message) {
       await revoke(connection);
       return "Disconnected.";
     } catch {
-      return "Disconnected from Firefox. To revoke server access, remove MaskedEmail from your Stalwart connected applications.";
+      return "Disconnected from this browser. To revoke server access, remove MaskedEmail from your Stalwart connected applications.";
     }
   }
 
@@ -78,7 +80,7 @@ async function createForField(sender) {
   if (!defaults) throw new Error("MaskedEmail can only create addresses on websites.");
   const prefix = fieldPrefix(settings, defaults);
   const { connection } = await store.get("connection");
-  if (!connection) throw new Error("Sign in to MaskedEmail first. Open it from the Firefox toolbar.");
+  if (!connection) throw new Error("Sign in to MaskedEmail first. Open it from the browser toolbar.");
   return authorized(connection, async connection => {
     const created = await createAlias(connection, prefix, defaults.description);
     // Stalwart may leave the generated address out of the create response.
@@ -132,24 +134,58 @@ function checkedOrigin(value) {
 }
 const fresh = pending => pending && Date.now() - pending.at < 10 * 60 * 1000 ? pending : null;
 
-// Sign-in runs here, not in the popup: Firefox closes the popup for the permission prompt and the
-// sign-in window, and keeps this page alive while launchWebAuthFlow is pending.
+// Sign-in runs here, not in the popup: the browser closes the popup for the permission prompt and
+// the sign-in window. Firefox keeps this page alive while launchWebAuthFlow is pending.
+const CHROMIUM = isChromium(browser.identity.getRedirectURL());
 let signing = null;
 function signIn(origin) {
   signing ??= (async () => {
     try {
       if ((await store.get("connection")).connection) throw new Error("An account is already connected. Disconnect it before signing in again.");
-      const connection = await authorize(origin, browser.identity);
-      await store.set({ connection });
-      await store.remove(["pendingSignin", "signinError"]);
-      return summary(connection);
+      if (CHROMIUM) return await startChromiumSignIn(origin);
+      return await finishSignIn(await authorize(origin, browser.identity));
     } catch (error) {
-      await store.set({ signinError: error.message || "Sign-in failed." });
-      await store.remove("pendingSignin");
+      await failSignIn(error);
       throw error;
     }
   })().finally(() => { signing = null; });
   return signing;
+}
+
+async function finishSignIn(connection) {
+  await store.set({ connection });
+  await store.remove(["pendingSignin", "signinError"]);
+  return summary(connection);
+}
+
+async function failSignIn(error) {
+  await store.set({ signinError: error.message || "Sign-in failed." });
+  await store.remove("pendingSignin");
+}
+
+// Chromium: launchWebAuthFlow only finishes on https://<id>.chromiumapp.org/, which Stalwart refuses,
+// so the sign-in opens in a plain window and the redirect is caught from the tab's URL. The pending
+// sign-in waits in session storage because the service worker may stop while the person signs in.
+async function startChromiumSignIn(origin) {
+  const pending = await prepareAuthorization(origin, redirectUri(browser.identity.getRedirectURL()));
+  await browser.storage.session.set({ oauthPending: pending });
+  await browser.windows.create({ url: pending.authUrl, type: "popup", width: 520, height: 760 });
+  return null; // Finishes in the tabs.onUpdated listener below; extension pages follow storage.
+}
+
+let handledCallback = null;
+if (CHROMIUM) {
+  browser.tabs.onUpdated.addListener(async (tabId, { url }) => {
+    // The tab URL is visible because sign-in asks for access to http://127.0.0.1/*.
+    if (!url?.startsWith("http://127.0.0.1/maskedemail-oauth/") || url === handledCallback) return;
+    handledCallback = url;
+    const { oauthPending: pending } = await browser.storage.session.get("oauthPending");
+    if (!pending || !url.startsWith(pending.redirect)) return;
+    await browser.storage.session.remove("oauthPending");
+    browser.tabs.remove(tabId).catch(() => {});
+    try { await finishSignIn(await completeAuthorization(pending, url)); }
+    catch (error) { await failSignIn(error); }
+  });
 }
 
 // If the popup closed for the permission prompt, continue once Firefox grants access.
@@ -161,21 +197,26 @@ browser.permissions.onAdded.addListener(async ({ origins = [] }) => {
 
 // One queue across all extension pages keeps rotating refresh tokens and account changes ordered.
 let queue = Promise.resolve();
-const reply = result => result.then(value => ({ value }), error => ({ error: error.message || "The request failed.", type: error.type }));
-browser.runtime.onMessage.addListener((message, sender) => {
+// Replies go through sendResponse: Chromium ignores a promise returned from the listener.
+function reply(result, sendResponse) {
+  result.then(value => sendResponse({ value }),
+    error => sendResponse({ error: error.message || "The request failed.", type: error.type }));
+  return true;
+}
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (sender.id !== browser.runtime.id) return;
   if (!sender.url?.startsWith(browser.runtime.getURL(""))) {
     // Web pages get exactly one request, from the content script's button, and the site comes from the
-    // tab Firefox reports rather than from the message.
+    // tab the browser reports rather than from the message.
     if (!sender.tab || message?.action !== "field-create") return;
     const result = queue.then(() => createForField(sender));
     queue = result.catch(() => {});
-    return reply(result);
+    return reply(result, sendResponse);
   }
   // Sign-in waits on the person, so it stays out of the queue and never blocks the popup's status check.
   const result = message.action === "signin"
     ? Promise.resolve().then(() => signIn(checkedOrigin(message.origin)))
     : queue.then(() => handle(message));
   if (message.action !== "signin") queue = result.catch(() => {});
-  return reply(result);
+  return reply(result, sendResponse);
 });

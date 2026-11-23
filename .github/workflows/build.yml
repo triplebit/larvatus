@@ -1,0 +1,67 @@
+name: Build extensions
+
+# Builds the Firefox (AMO) and Chrome (Chrome Web Store) packages on every push and pull request.
+# Pushing a tag like v1.0.1 also publishes both packages to a GitHub release; the tag must match
+# the version in extension/manifest.json.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run tests
+        run: node --test test/
+
+      - name: Check tag matches manifest version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version=$(node -p 'require("./extension/manifest.json").version')
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match manifest version $version"
+            exit 1
+          fi
+
+      - name: Build packages
+        run: node scripts/build.mjs
+
+      # Mozilla's add-on linter, which AMO also runs on upload. The latest 8.x is used so the linter
+      # knows recent manifest keys such as data_collection_permissions; warnings do not fail the build.
+      - name: Lint Firefox package
+        run: npx --yes web-ext@8 lint --source-dir dist/firefox
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: masked-email-packages
+          path: dist/*.zip
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: masked-email-packages
+          path: dist
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --repo "$GITHUB_REPOSITORY" --title "MaskedEmail $GITHUB_REF_NAME" --generate-notes

@@ -1,3 +1,4 @@
+import "./compat.js";
 import { FIELD_ORIGINS, loadSettings, saveSettings } from "./options.js";
 import { PREFIX_PATTERN, PREFIX_RULE } from "./stalwart.js";
 import { applyTheme, beginSignIn, byId, notice, send } from "./ui.js";
@@ -28,7 +29,8 @@ byId("connect-form").addEventListener("submit", async event => {
     const signingIn = beginSignIn(byId("server").value);
     button.disabled = true;
     notice("Waiting for Stalwart sign-in…");
-    await signingIn;
+    // Chromium answers before the sign-in window is done; the storage listener below takes over.
+    if (await signingIn === null) return notice("Finish signing in in the Stalwart window.");
     await display();
     notice();
   } catch (error) {
@@ -89,7 +91,6 @@ byId("field-button").addEventListener("click", () => {
     }
     await saveSettings({ fieldButton: turnOn });
     await showOptions();
-    if (turnOn) autofillNotice("On. Pages you already have open show the button once they finish loading or after a reload.");
   })().catch(error => autofillNotice(error.message, true));
 });
 
@@ -133,6 +134,14 @@ for (const radio of document.getElementsByName("theme")) {
     saveSettings({ theme: radio.value }).catch(error => autofillNotice(error.message, true));
   });
 }
+
+// A sign-in can finish after this page's own request has lost its reply (Chromium may restart the
+// background service worker meanwhile), so follow the stored account too.
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local") return;
+  if ("connection" in changes) display().then(() => notice(), error => notice(error.message, true));
+  if (changes.signinError?.newValue) notice(changes.signinError.newValue, true);
+});
 
 display().catch(error => notice(error.message, true));
 showOptions().catch(error => autofillNotice(error.message, true));

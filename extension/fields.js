@@ -1,5 +1,8 @@
 // Field rules for content.js. A classic script (content scripts cannot be modules), so it shares
 // these through a global. The rules work on plain values so they can be tested without a browser.
+// Chromium content scripts only have `chrome`; content.js uses `browser`.
+globalThis.browser ??= globalThis.chrome;
+
 (() => {
   const SIGN_UP = /\b(sign ?up|register|registration|create (an |your |new )?account|new account|join|get started|start (free|trial|now)|subscribe|enroll)\b/i;
   const SIGN_IN = /\b(sign ?in|log ?in|logon|log on)\b/i;

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { aliasPage, authorize, createAlias, listAliases, refresh, serverOrigin, setEnabled } from "../extension/stalwart.js";
+import { aliasPage, authorize, redirectUri, createAlias, listAliases, refresh, serverOrigin, setEnabled } from "../extension/stalwart.js";
 
 const origin = "https://mail.example.org";
 const settings = "urn:stalwart:oauth:scope:settings";
@@ -123,4 +123,9 @@ test("adopts rotated refresh tokens", async t => {
 test("links an alias to its Stalwart admin page by JMAP id", () => {
   assert.equal(aliasPage("https://mail.triplebit.net", "jp9td1w7baaa"),
     "https://mail.triplebit.net/account/Account/x:MaskedEmail/jp9td1w7baaa");
+});
+
+test("uses each browser's own sign-in redirect", () => {
+  assert.equal(redirectUri("https://abc123.extensions.allizom.org/"), "http://127.0.0.1/mozoauth2/abc123");
+  assert.equal(redirectUri("https://abcdefghijklmnop.chromiumapp.org/"), "http://127.0.0.1/maskedemail-oauth/abcdefghijklmnop");
 });

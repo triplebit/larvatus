@@ -1,6 +1,6 @@
 # MaskedEmail
 
-A Firefox toolbar extension for Stalwart masked addresses. Create an address with a random or custom prefix, search by address or description, click an address to copy it, and switch delivery on or off. Stalwart generates the address and suffix. When the popup opens on a website, the prefix defaults to the site’s name (`google` for mail.google.com) and the description to “Created on mail.google.com”. Edit or clear either before creating. The list uses the native creation timestamp, newest first.
+A Firefox and Chrome toolbar extension for Stalwart masked addresses. Create an address with a random or custom prefix, search by address or description, click an address to copy it, and switch delivery on or off. Stalwart generates the address and suffix. When the popup opens on a website, the prefix defaults to the site’s name (`google` for mail.google.com) and the description to “Created on mail.google.com”. Edit or clear either before creating. The list uses the native creation timestamp, newest first.
 
 ## Load in Firefox
 
@@ -10,6 +10,14 @@ A Firefox toolbar extension for Stalwart masked addresses. Create an address wit
 4. Enter the canonical HTTPS address of your Stalwart server and click **Sign in with Stalwart**. Allow Firefox to connect, then sign in and approve account settings access on Stalwart. Firefox may close the popup during these steps. Sign-in finishes in the background, so reopen MaskedEmail afterwards.
 
 The included package is unsigned. Firefox removes temporarily loaded extensions on restart. A permanent installation in standard Firefox requires Mozilla signing.
+
+## Load in Chrome
+
+Chrome, Edge, Brave and other Chromium browsers (version 121 or later) load the Chrome build.
+
+1. Build the packages with `node scripts/build.mjs` (see Development), or download them from a GitHub release.
+2. Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and select **dist/chrome**.
+3. Sign in as above. Chrome also asks for access to `127.0.0.1`: Stalwart only accepts loopback redirects, and Chrome's own sign-in helper only supports `chromiumapp.org` ones, so the extension opens the sign-in in a window and finishes when that window reaches `http://127.0.0.1/maskedemail-oauth/…`.
 
 ## Settings
 
@@ -34,14 +42,20 @@ Stalwart accepts custom prefixes of up to 64 ASCII letters, digits, and undersco
 
 ## Development
 
-The extension uses plain HTML, CSS, and JavaScript and loads directly from the extension directory. Run the protocol tests with Node.js 22.7 or later.
+The extension uses plain HTML, CSS, and JavaScript with no dependencies. `extension/manifest.json` is the Firefox manifest, so Firefox loads the folder directly. Run the tests with Node.js 22.7 or later.
 
 ```sh
 node --test test/
 ```
 
-To rebuild the XPI from the project root:
+Build both store packages from the project root. This also refreshes `masked-email.xpi`.
 
 ```sh
-(cd extension && zip -q ../masked-email.xpi *.html *.css *.js *.json *.svg)
+node scripts/build.mjs
 ```
+
+The script writes `dist/firefox` and `dist/chrome` plus `dist/masked-email-<version>-firefox.zip` and `dist/masked-email-<version>-chrome.zip`. The Chrome manifest is derived from the Firefox one: a service worker instead of background scripts, the PNG icons in `extension/icons`, and no Firefox-only keys. Both browsers share the same code; `compat.js` maps `browser` to `chrome` where needed.
+
+## Releases
+
+`.github/workflows/build.yml` runs the tests, builds both packages, and lints the Firefox package with Mozilla's `web-ext lint` on every push and pull request. The packages are attached to each run as an artifact. To publish a release, set the version in `extension/manifest.json`, then push a matching tag such as `v1.0.1`. The workflow attaches both zips to a GitHub release, ready to upload to addons.mozilla.org and the Chrome Web Store.

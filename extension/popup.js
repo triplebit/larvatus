@@ -1,3 +1,4 @@
+import "./compat.js";
 import { beginSignIn, byId, notice, send } from "./ui.js";
 import { FIELD_ORIGINS, loadSettings } from "./options.js";
 import { siteDefaults } from "./site.js";

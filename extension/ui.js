@@ -1,5 +1,6 @@
+import "./compat.js";
 import { DEFAULTS, loadSettings } from "./options.js";
-import { hostPattern, serverOrigin } from "./stalwart.js";
+import { hostPattern, isChromium, serverOrigin } from "./stalwart.js";
 
 // Theme: a localStorage copy applies the last choice before the first paint, then storage confirms it.
 const THEME_CACHE = "maskedemail-theme";
@@ -34,11 +35,13 @@ export function notice(message = "", error = false) {
 // server first and finishes sign-in on its own. The returned promise only settles while this page lives.
 export function beginSignIn(value) {
   const origin = serverOrigin(value);
-  const granted = browser.permissions.request({ origins: [hostPattern(origin)] });
+  // Chromium also needs the loopback address to see the sign-in tab reach it (see background.js).
+  const origins = [hostPattern(origin), ...(isChromium(browser.identity.getRedirectURL()) ? ["http://127.0.0.1/*"] : [])];
+  const granted = browser.permissions.request({ origins });
   const noted = send("signin-pending", { origin });
   return (async () => {
     await noted;
-    if (!await granted) throw new Error("Firefox needs permission to connect to this server.");
+    if (!await granted) throw new Error("Your browser needs permission to connect to this server.");
     return send("signin", { origin });
   })();
 }
