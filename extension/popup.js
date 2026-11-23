@@ -1,4 +1,5 @@
 import { beginSignIn, byId, notice, send } from "./ui.js";
+import { FIELD_ORIGINS, loadSettings } from "./options.js";
 import { siteDefaults } from "./site.js";
 import { aliasPage } from "./stalwart.js";
 
@@ -105,6 +106,13 @@ async function act(action) {
 }
 
 byId("account").onclick = () => browser.runtime.openOptionsPage();
+byId("enable-autofill").onclick = () => browser.runtime.openOptionsPage().then(() => window.close());
+
+// Point to the on-page button in Settings while it is off (or Firefox has withdrawn its site access).
+async function showAutofillHint() {
+  const on = (await loadSettings()).fieldButton && await browser.permissions.contains({ origins: FIELD_ORIGINS });
+  byId("enable-autofill").hidden = on;
+}
 byId("connect-form").onsubmit = event => {
   event.preventDefault();
   let signingIn;
@@ -157,6 +165,7 @@ async function showSignInState() {
 
 async function start() {
   prefill().catch(() => {});
+  showAutofillHint().catch(() => {});
   account = await send("status");
   notice();
   if (!account) await showSignInState();

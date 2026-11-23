@@ -1,9 +1,19 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Settings · MaskedEmail</title><link rel="stylesheet" href="style.css"><script type="module" src="settings.js"></script></head>
-<body class="settings"><main class="settings-card">
-  <header><img src="icon.svg" width="35" height="35" alt=""><strong>MaskedEmail</strong><span class="trailing">Settings</span></header>
+<body class="settings"><main class="settings-stack">
+  <section class="card" aria-labelledby="brand-title">
+    <header><img src="icon.svg" width="35" height="35" alt=""><strong id="brand-title">MaskedEmail</strong><span class="trailing">Settings</span></header>
+    <div class="group support" id="support" hidden>
+      <h2 id="support-title">Support MaskedEmail</h2>
+      <p>MaskedEmail is published for free by Triplebit to promote decentralized privacy tools. Triplebit is a nonprofit 501(c)(3) public charity focused on digital rights and technology for the public good. If you want to support our mission, please donate.</p>
+      <div class="donate">
+        <a class="button primary" href="https://www.paypal.com/us/fundraiser/charity/6036345" target="_blank" rel="noopener noreferrer">Donate with PayPal <span aria-hidden="true">↗</span></a>
+        <a class="button" href="https://www.every.org/triplebit?code=cccd9fbd#/donate" target="_blank" rel="noopener noreferrer">Other payment methods <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </section>
 
-  <section class="group" aria-labelledby="account-title">
+  <section class="card group" aria-labelledby="account-title">
     <h2 id="account-title">Account</h2>
     <div id="signin" hidden>
       <h1>Connect to Stalwart</h1>
@@ -21,7 +31,7 @@
     <p id="notice" role="status"></p>
   </section>
 
-  <section class="group" aria-labelledby="autofill-title">
+  <section class="card group needs-account" aria-labelledby="autofill-title">
     <h2 id="autofill-title">Autofill</h2>
     <div class="option">
       <button type="button" role="switch" class="switch" id="field-button" aria-checked="false" aria-labelledby="field-button-label" aria-describedby="field-button-help"><span></span></button>
@@ -33,15 +43,29 @@
       <strong id="button-outside-label">Place the button outside the field</strong>
       <p id="button-outside-help">Show the button next to the email field instead of inside it. This avoids overlapping with buttons from password managers like 1Password or Bitwarden.</p>
     </div>
+    <div class="option plain" id="prefix-option">
+      <strong id="prefix-label">Prefix for autofilled addresses</strong>
+      <div class="choices" role="radiogroup" aria-labelledby="prefix-label">
+        <label><input type="radio" name="field-prefix" value="site"> Site name <small>github for github.com</small></label>
+        <label><input type="radio" name="field-prefix" value="random"> Random <small>Stalwart chooses</small></label>
+        <label><input type="radio" name="field-prefix" value="custom"> Custom</label>
+      </div>
+      <input id="custom-prefix" hidden maxlength="64" placeholder="Your prefix" spellcheck="false" autocomplete="off" aria-label="Custom prefix" aria-describedby="custom-prefix-help">
+      <p id="custom-prefix-help" class="option-notice" role="status"></p>
+    </div>
     <p id="autofill-notice" class="option-notice" role="status"></p>
   </section>
 
-  <section class="group" aria-labelledby="appearance-title">
+  <section class="card group needs-account" aria-labelledby="appearance-title">
     <h2 id="appearance-title">Appearance</h2>
     <div class="option plain">
-      <label for="theme"><strong>Theme</strong></label>
+      <strong id="theme-label">Theme</strong>
       <p>System switches between light and dark to match your device.</p>
-      <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
+      <div class="choices" role="radiogroup" aria-labelledby="theme-label">
+        <label><input type="radio" name="theme" value="system"> System</label>
+        <label><input type="radio" name="theme" value="light"> Light</label>
+        <label><input type="radio" name="theme" value="dark"> Dark</label>
+      </div>
     </div>
   </section>
 </main></body></html>

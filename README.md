@@ -15,7 +15,8 @@ The included package is unsigned. Firefox removes temporarily loaded extensions 
 
 Open **Settings** from the popup, or from Firefox's add-on manager.
 
-- **Show MaskedEmail button on email fields** adds a button to email fields on sign-up forms. Clicking it creates an address named after the site, like the popup's defaults, and fills it in. Firefox asks for access to websites the first time you turn this on. The button skips forms that look like sign-in forms: a current-password field, a "Sign in" or "Log in" submit button, a login URL, or just an email and one password.
+- **Show MaskedEmail button on email fields** adds a button to email fields on sign-up forms. Clicking it creates an address for the site and fills it in. Firefox asks for access to websites the first time you turn this on. The button skips forms that look like sign-in forms: a current-password field, a "Sign in" or "Log in" submit button, a login URL, or just an email and one password.
+- **Prefix for autofilled addresses** chooses the prefix the button uses: the site name (`github` for github.com), a random one from Stalwart, or a custom prefix of 1–64 letters, digits or underscores that starts with a letter or digit. The description is always "Created on" plus the site.
 - **Place the button outside the field** moves the button beside the field so it does not overlap password manager buttons.
 - **Theme** switches between System, Light and Dark.
 

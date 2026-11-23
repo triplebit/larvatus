@@ -164,10 +164,14 @@ export async function listAliases(connection) {
   return [...rows.values()].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || a.id.localeCompare(b.id));
 }
 
+// Stalwart's rule for custom prefixes.
+export const PREFIX_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_]{0,63}$/;
+export const PREFIX_RULE = "Use 1–64 letters, digits or underscores. Start with a letter or digit.";
+
 export async function createAlias(connection, prefix, description) {
   const fields = { enable: true };
   if (prefix) {
-    if (!/^[a-zA-Z0-9][a-zA-Z0-9_]{0,63}$/.test(prefix)) throw new Error("Use 1–64 letters, digits or underscores. Start with a letter or digit.");
+    if (!PREFIX_PATTERN.test(prefix)) throw new Error(PREFIX_RULE);
     fields.emailPrefix = prefix.toLowerCase();
   }
   if (description) fields.description = description;
