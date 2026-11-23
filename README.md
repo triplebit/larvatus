@@ -24,7 +24,7 @@ Chrome, Edge, Brave and other Chromium browsers (version 121 or later) load the 
 Open **Settings** from the popup, or from Firefox's add-on manager.
 
 - **Show MaskedEmail button on email fields** adds a button to email fields on sign-up forms. Clicking it creates an address for the site and fills it in. Firefox asks for access to websites the first time you turn this on. The button skips forms that look like sign-in forms: a current-password field, a "Sign in" or "Log in" submit button, a login URL, or just an email and one password.
-- **Prefix for autofilled addresses** chooses the prefix the button uses: the site name (`github` for github.com), a random one from Stalwart, or a custom prefix of 1–64 letters, digits or underscores that starts with a letter or digit. The description is always "Created on" plus the site.
+- **Prefix for autofilled addresses** chooses the prefix the button uses: the site name (`github` for github.com), one random letter or digit, or a custom prefix of 1–64 letters, digits or underscores that starts with a letter or digit. The description is always "Created on" plus the site, and the address's Associated Domain is the site's origin, such as `https://github.com`.
 - **Place the button outside the field** moves the button beside the field so it does not overlap password manager buttons.
 - **Theme** switches between System, Light and Dark.
 
@@ -36,7 +36,7 @@ Use Stalwart 1.0.3 or later with its built-in OAuth server, public client regist
 
 The requested scope is `urn:stalwart:oauth:scope:settings`, which Stalwart uses for masked addresses. Tokens are kept in local Firefox extension storage. Alias lists stay in memory while the popup is open. Search runs locally. **Settings → Disconnect account** clears local credentials and requests token revocation.
 
-Stalwart accepts custom prefixes of up to 64 ASCII letters, digits, and underscores, starting with a letter or digit. Leave the prefix blank for a fully server-generated address. Disabling an alias makes Stalwart reject incoming mail for it. Re-enabling restores delivery for an unexpired address.
+Stalwart accepts custom prefixes of up to 64 ASCII letters, digits, and underscores, starting with a letter or digit. Leave the prefix blank for one random letter or digit, which keeps the address short; Stalwart invents a much longer prefix when none is sent. Disabling an alias makes Stalwart reject incoming mail for it. Re-enabling restores delivery for an unexpired address.
 
 [Stalwart masked email](https://stalw.art/docs/email/management/masked-email/) · [OAuth scopes](https://stalw.art/docs/auth/oauth/scopes/) · [Firefox identity API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/identity)
 

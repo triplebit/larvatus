@@ -72,17 +72,18 @@ async function authorized(connection, run) {
   }
 }
 
-// The email field button: an address described by the tab's site, with the prefix chosen in Settings.
+// The email field button: an address described by and associated with the tab's site, with the prefix chosen in Settings.
 async function createForField(sender) {
   const settings = await loadSettings();
   if (!settings.fieldButton) throw new Error("The MaskedEmail button is turned off in Settings.");
-  const defaults = siteDefaults(sender.tab?.url || sender.url);
+  const url = sender.tab?.url || sender.url;
+  const defaults = siteDefaults(url);
   if (!defaults) throw new Error("MaskedEmail can only create addresses on websites.");
   const prefix = fieldPrefix(settings, defaults);
   const { connection } = await store.get("connection");
   if (!connection) throw new Error("Sign in to MaskedEmail first. Open it from the browser toolbar.");
   return authorized(connection, async connection => {
-    const created = await createAlias(connection, prefix, defaults.description);
+    const created = await createAlias(connection, prefix, defaults.description, new URL(url).origin);
     // Stalwart may leave the generated address out of the create response.
     const email = created.email || (await getAlias(connection, created.id))?.email;
     if (!email) throw new Error("Stalwart created the address but did not return it. Open MaskedEmail to copy it.");
@@ -90,7 +91,7 @@ async function createForField(sender) {
   });
 }
 
-// The prefix chosen in Settings: the site's name, none (Stalwart picks a random one), or a custom one.
+// The prefix chosen in Settings: the site's name, none (createAlias picks one random character), or a custom one.
 function fieldPrefix(settings, defaults) {
   if (settings.fieldPrefix === "random") return "";
   if (settings.fieldPrefix !== "custom") return defaults.prefix;

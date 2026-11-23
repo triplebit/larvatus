@@ -192,13 +192,13 @@ export async function listAliases(connection) {
 export const PREFIX_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_]{0,63}$/;
 export const PREFIX_RULE = "Use 1–64 letters, digits or underscores. Start with a letter or digit.";
 
-export async function createAlias(connection, prefix, description) {
-  const fields = { enable: true };
-  if (prefix) {
-    if (!PREFIX_PATTERN.test(prefix)) throw new Error(PREFIX_RULE);
-    fields.emailPrefix = prefix.toLowerCase();
-  }
+export async function createAlias(connection, prefix, description, forDomain) {
+  // Without a prefix Stalwart invents a long one. 256 % 36 leaves a–d slightly likelier, which is fine here.
+  prefix ||= "abcdefghijklmnopqrstuvwxyz0123456789"[crypto.getRandomValues(new Uint8Array(1))[0] % 36];
+  if (!PREFIX_PATTERN.test(prefix)) throw new Error(PREFIX_RULE);
+  const fields = { enable: true, emailPrefix: prefix.toLowerCase() };
   if (description) fields.description = description;
+  if (forDomain) fields.forDomain = forDomain;
   const result = await call(connection, "set", { create: { alias: fields } });
   if (!result.created?.alias?.id) throw problem(result.notCreated?.alias);
   return result.created.alias;

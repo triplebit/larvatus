@@ -86,7 +86,7 @@ test("reads all account-filtered pages, including short pages, and sorts by crea
   assert.deepEqual((await listAliases(connection)).map(alias => alias.id), ["new", "middle", "old"]);
 });
 
-test("uses server-generated prefixes and patches only the delivery flag", async t => {
+test("sends one random character for a blank prefix, the site origin when given, and patches only the delivery flag", async t => {
   const payloads = [];
   jmap(t, (verb, args) => {
     assert.equal(verb, "set");
@@ -95,10 +95,14 @@ test("uses server-generated prefixes and patches only the delivery flag", async 
   });
   await createAlias(connection, "", "");
   await createAlias(connection, "Newsletter_1", "News");
+  await createAlias(connection, "google", "Created on mail.google.com", "https://mail.google.com");
   await assert.rejects(createAlias(connection, "_bad", ""), /letters/);
   await setEnabled(connection, "b", false);
-  assert.deepEqual(payloads, [{ create: { alias: { enable: true } } },
+  const random = payloads[0].create.alias.emailPrefix;
+  assert.match(random, /^[a-z0-9]$/);
+  assert.deepEqual(payloads, [{ create: { alias: { enable: true, emailPrefix: random } } },
     { create: { alias: { enable: true, emailPrefix: "newsletter_1", description: "News" } } },
+    { create: { alias: { enable: true, emailPrefix: "google", description: "Created on mail.google.com", forDomain: "https://mail.google.com" } } },
     { update: { b: { enable: false } } }]);
 });
 
