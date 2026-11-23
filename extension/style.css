@@ -67,6 +67,9 @@ li { border-top: 1px solid var(--line); padding: 10px 4px 9px 1px; }
 .row-head { justify-content: space-between; }
 .copy { border: 0; padding: 1px 0; text-align: left; color: var(--accent-ink); font-weight: 600; letter-spacing: -.2px; background: transparent; overflow-wrap: anywhere; user-select: text; }
 .copy:hover { background: transparent; text-decoration: underline; }
+.row-actions { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.edit { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; color: var(--muted); background: transparent; border-color: transparent; }
+.edit:hover { color: var(--accent-ink); background: var(--accent-soft); }
 .switch { flex: 0 0 auto; width: 33px; height: 20px; padding: 2px; background: #d9d4ca; border: 1px solid #c8c2b6; border-radius: 12px; }
 .switch span { display: block; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
 .switch[aria-checked=true] { background: var(--accent); border-color: var(--accent); }

@@ -1,5 +1,6 @@
 import { beginSignIn, byId, notice, send } from "./ui.js";
 import { siteDefaults } from "./site.js";
+import { aliasPage } from "./stalwart.js";
 
 let account;
 let aliases = [];
@@ -55,6 +56,9 @@ function render() {
   for (const alias of visible) {
     const row = byId("row").content.cloneNode(true);
     copyable(row.querySelector(".copy"), alias.email);
+    const edit = row.querySelector(".edit");
+    edit.setAttribute("aria-label", "Edit " + alias.email + " in Stalwart");
+    edit.onclick = () => browser.tabs.create({ url: aliasPage(account.origin, alias.id) }).then(() => window.close(), error => notice(error.message, true));
     const toggle = row.querySelector(".switch");
     toggle.setAttribute("aria-checked", String(alias.enable));
     toggle.setAttribute("aria-label", "Enable delivery to " + alias.email);

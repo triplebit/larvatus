@@ -137,6 +137,11 @@ async function call(connection, verb, args) {
   return result;
 }
 
+// The alias's page in Stalwart's web admin, keyed by the same JMAP id the extension reads.
+export function aliasPage(origin, id) {
+  return origin + "/account/Account/x:MaskedEmail/" + encodeURIComponent(id);
+}
+
 export async function listAliases(connection) {
   const rows = new Map();
   let position = 0;
