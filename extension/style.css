@@ -62,7 +62,7 @@ small { color: var(--muted); font-size: 11px; font-weight: 400; }
 .search-box::after { content: ""; position: absolute; left: 23px; top: 23px; width: 6px; height: 1.5px; background: var(--muted); transform: rotate(45deg); pointer-events: none; }
 .search-box input { padding-left: 37px; }
 .meta { justify-content: space-between; font-size: 11px; color: var(--muted); padding: 9px 1px 7px; }
-#aliases { list-style: none; padding: 0; margin: 0; max-height: 214px; overflow: auto; scrollbar-width: thin; }
+#aliases { list-style: none; padding: 0; margin: 0; }
 li { border-top: 1px solid var(--line); padding: 10px 4px 9px 1px; }
 .row-head { justify-content: space-between; }
 .copy { border: 0; padding: 1px 0; text-align: left; color: var(--accent-ink); font-weight: 600; letter-spacing: -.2px; background: transparent; overflow-wrap: anywhere; user-select: text; }
