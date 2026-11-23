@@ -1,4 +1,17 @@
+import { DEFAULTS, loadSettings } from "./options.js";
 import { hostPattern, serverOrigin } from "./stalwart.js";
+
+// Theme: a localStorage copy applies the last choice before the first paint, then storage confirms it.
+const THEME_CACHE = "maskedemail-theme";
+export function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  try { localStorage.setItem(THEME_CACHE, theme); } catch {}
+}
+try { document.documentElement.dataset.theme = localStorage.getItem(THEME_CACHE) || DEFAULTS.theme; } catch {}
+loadSettings().then(settings => applyTheme(settings.theme), () => {});
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.settings) applyTheme({ ...DEFAULTS, ...changes.settings.newValue }.theme);
+});
 
 export const byId = id => document.getElementById(id);
 

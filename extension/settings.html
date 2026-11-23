@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Settings · MaskedEmail</title><link rel="stylesheet" href="style.css"><script type="module" src="settings.js"></script></head>
+<body class="settings"><main class="settings-card">
+  <header><img src="icon.svg" width="35" height="35" alt=""><strong>MaskedEmail</strong><span class="trailing">Settings</span></header>
+
+  <section class="group" aria-labelledby="account-title">
+    <h2 id="account-title">Account</h2>
+    <div id="signin" hidden>
+      <h1>Connect to Stalwart</h1>
+      <p>Enter your mail server to sign in and manage your masked addresses.</p>
+      <form id="connect-form">
+        <label for="server">Server address</label>
+        <input id="server" placeholder="mail.example.com" required autocomplete="url" autocapitalize="none" spellcheck="false">
+        <button id="connect" class="primary">Sign in with Stalwart <span aria-hidden="true">↗</span></button>
+      </form>
+    </div>
+    <div id="connected" hidden>
+      <strong id="user"></strong><div class="muted" id="host"></div>
+      <button id="disconnect">Disconnect account</button>
+    </div>
+    <p id="notice" role="status"></p>
+  </section>
+
+  <section class="group" aria-labelledby="autofill-title">
+    <h2 id="autofill-title">Autofill</h2>
+    <div class="option">
+      <button type="button" role="switch" class="switch" id="field-button" aria-checked="false" aria-labelledby="field-button-label" aria-describedby="field-button-help"><span></span></button>
+      <strong id="field-button-label">Show MaskedEmail button on email fields</strong>
+      <p id="field-button-help">Click the button next to a sign-up email field to create a masked address for that site and fill it in. Firefox asks for access to websites the first time you turn this on.</p>
+    </div>
+    <div class="option" id="outside-option">
+      <button type="button" role="switch" class="switch" id="button-outside" aria-checked="false" aria-labelledby="button-outside-label" aria-describedby="button-outside-help"><span></span></button>
+      <strong id="button-outside-label">Place the button outside the field</strong>
+      <p id="button-outside-help">Show the button next to the email field instead of inside it. This avoids overlapping with buttons from password managers like 1Password or Bitwarden.</p>
+    </div>
+    <p id="autofill-notice" class="option-notice" role="status"></p>
+  </section>
+
+  <section class="group" aria-labelledby="appearance-title">
+    <h2 id="appearance-title">Appearance</h2>
+    <div class="option plain">
+      <label for="theme"><strong>Theme</strong></label>
+      <p>System switches between light and dark to match your device.</p>
+      <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
+    </div>
+  </section>
+</main></body></html>

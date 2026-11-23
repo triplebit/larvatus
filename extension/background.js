@@ -1,4 +1,6 @@
-import { authorize, createAlias, hostPattern, listAliases, refresh, revoke, serverOrigin, session, setEnabled } from "./stalwart.js";
+import { FIELD_ORIGINS, loadSettings } from "./options.js";
+import { siteDefaults } from "./site.js";
+import { authorize, createAlias, getAlias, hostPattern, listAliases, refresh, revoke, serverOrigin, session, setEnabled } from "./stalwart.js";
 
 const store = browser.storage.local;
 function summary(connection) {
@@ -31,20 +33,7 @@ async function handle(message) {
     }
   }
 
-  async function renew() {
-    try {
-      connection = await refresh(connection);
-      await store.set({ connection });
-    } catch (error) {
-      if (["invalid_grant", "invalid_client"].includes(error.code)) {
-        await store.remove("connection");
-        throw new Error("Your session has ended. Open Account to sign in again.");
-      }
-      throw error;
-    }
-  }
-
-  async function run() {
+  return authorized(connection, async connection => {
     switch (message.action) {
       case "list":
         Object.assign(connection, await session(connection));
@@ -54,16 +43,76 @@ async function handle(message) {
       case "toggle": return setEnabled(connection, message.id, message.enable);
       default: throw new Error("Unknown action.");
     }
+  });
+}
+
+// Runs a request with a fresh access token, renewing once if the server rejects the current one.
+async function authorized(connection, run) {
+  async function renew() {
+    try {
+      connection = await refresh(connection);
+      await store.set({ connection });
+    } catch (error) {
+      if (["invalid_grant", "invalid_client"].includes(error.code)) {
+        await store.remove("connection");
+        throw new Error("Your session has ended. Open Settings to sign in again.");
+      }
+      throw error;
+    }
   }
   if (connection.expires && connection.expires < Date.now() + 30000) await renew();
   try {
-    return await run();
+    return await run(connection);
   } catch (error) {
     if (error.status !== 401) throw error;
     await renew();
-    return run();
+    return run(connection);
   }
 }
+
+// The email field button: an address named after the tab's site, like the popup's defaults.
+async function createForField(sender) {
+  if (!(await loadSettings()).fieldButton) throw new Error("The MaskedEmail button is turned off in Settings.");
+  const defaults = siteDefaults(sender.tab?.url || sender.url);
+  if (!defaults) throw new Error("MaskedEmail can only create addresses on websites.");
+  const { connection } = await store.get("connection");
+  if (!connection) throw new Error("Sign in to MaskedEmail first. Open it from the Firefox toolbar.");
+  return authorized(connection, async connection => {
+    const created = await createAlias(connection, defaults.prefix, defaults.description);
+    // Stalwart may leave the generated address out of the create response.
+    const email = created.email || (await getAlias(connection, created.id))?.email;
+    if (!email) throw new Error("Stalwart created the address but did not return it. Open MaskedEmail to copy it.");
+    return { email };
+  });
+}
+
+// The email field content script runs only while the option is on and Firefox allows website access.
+const FIELD_SCRIPT = { id: "email-fields", matches: FIELD_ORIGINS, js: ["fields.js", "content.js"],
+  runAt: "document_idle", allFrames: true, persistAcrossSessions: true };
+let syncing = Promise.resolve();
+function syncFieldScript({ reregister = false } = {}) {
+  syncing = syncing.then(async () => {
+    const wanted = (await loadSettings()).fieldButton && await browser.permissions.contains({ origins: FIELD_ORIGINS });
+    let registered = (await browser.scripting.getRegisteredContentScripts({ ids: [FIELD_SCRIPT.id] })).length > 0;
+    if (registered && (!wanted || reregister)) {
+      await browser.scripting.unregisterContentScripts({ ids: [FIELD_SCRIPT.id] });
+      registered = false;
+    }
+    if (!wanted || registered) return;
+    await browser.scripting.registerContentScripts([FIELD_SCRIPT]);
+    if (reregister) return;
+    // Newly turned on: add the button to pages that are already open, too.
+    for (const tab of await browser.tabs.query({ url: FIELD_ORIGINS })) {
+      browser.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, files: FIELD_SCRIPT.js }).catch(() => {});
+    }
+  }).catch(error => console.error("MaskedEmail could not update the email field button.", error));
+  return syncing;
+}
+browser.runtime.onInstalled.addListener(() => syncFieldScript({ reregister: true }));
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.settings) syncFieldScript();
+});
+browser.permissions.onRemoved.addListener(() => syncFieldScript());
 
 function checkedOrigin(value) {
   const origin = serverOrigin(String(value));
@@ -94,18 +143,28 @@ function signIn(origin) {
 
 // If the popup closed for the permission prompt, continue once Firefox grants access.
 browser.permissions.onAdded.addListener(async ({ origins = [] }) => {
+  syncFieldScript();
   const pending = fresh((await store.get("pendingSignin")).pendingSignin);
   if (pending && origins.includes(hostPattern(pending.origin))) signIn(pending.origin).catch(() => {});
 });
 
 // One queue across all extension pages keeps rotating refresh tokens and account changes ordered.
 let queue = Promise.resolve();
+const reply = result => result.then(value => ({ value }), error => ({ error: error.message || "The request failed." }));
 browser.runtime.onMessage.addListener((message, sender) => {
-  if (sender.id !== browser.runtime.id || !sender.url?.startsWith(browser.runtime.getURL(""))) return;
+  if (sender.id !== browser.runtime.id) return;
+  if (!sender.url?.startsWith(browser.runtime.getURL(""))) {
+    // Web pages get exactly one request, from the content script's button, and the site comes from the
+    // tab Firefox reports rather than from the message.
+    if (!sender.tab || message?.action !== "field-create") return;
+    const result = queue.then(() => createForField(sender));
+    queue = result.catch(() => {});
+    return reply(result);
+  }
   // Sign-in waits on the person, so it stays out of the queue and never blocks the popup's status check.
   const result = message.action === "signin"
     ? Promise.resolve().then(() => signIn(checkedOrigin(message.origin)))
     : queue.then(() => handle(message));
   if (message.action !== "signin") queue = result.catch(() => {});
-  return result.then(value => ({ value }), error => ({ error: error.message || "The request failed." }));
+  return reply(result);
 });

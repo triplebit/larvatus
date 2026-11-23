@@ -11,11 +11,21 @@ A Firefox toolbar extension for Stalwart masked addresses. Create an address wit
 
 The included package is unsigned. Firefox removes temporarily loaded extensions on restart. A permanent installation in standard Firefox requires Mozilla signing.
 
+## Settings
+
+Open **Settings** from the popup, or from Firefox's add-on manager.
+
+- **Show MaskedEmail button on email fields** adds a button to email fields on sign-up forms. Clicking it creates an address named after the site, like the popup's defaults, and fills it in. Firefox asks for access to websites the first time you turn this on. The button skips forms that look like sign-in forms: a current-password field, a "Sign in" or "Log in" submit button, a login URL, or just an email and one password.
+- **Place the button outside the field** moves the button beside the field so it does not overlap password manager buttons.
+- **Theme** switches between System, Light and Dark.
+
+The button fills the field the way typing does, with `insertText` and its input events, so sites built with React, Vue or Angular keep the address when you move between fields.
+
 ## Server requirements and privacy
 
 Use Stalwart 1.0.3 or later with its built-in OAuth server, public client registration, and the masked-address permissions for your account. OAuth discovery, the token endpoint, and JMAP must use the HTTPS origin you enter. The extension registers a public client automatically and signs in with the authorization code flow, PKCE S256, and Firefox’s extension-specific loopback callback.
 
-The requested scope is `urn:stalwart:oauth:scope:settings`, which Stalwart uses for masked addresses. Tokens are kept in local Firefox extension storage. Alias lists stay in memory while the popup is open. Search runs locally. **Account → Disconnect account** clears local credentials and requests token revocation.
+The requested scope is `urn:stalwart:oauth:scope:settings`, which Stalwart uses for masked addresses. Tokens are kept in local Firefox extension storage. Alias lists stay in memory while the popup is open. Search runs locally. **Settings → Disconnect account** clears local credentials and requests token revocation.
 
 Stalwart accepts custom prefixes of up to 64 ASCII letters, digits, and underscores, starting with a letter or digit. Leave the prefix blank for a fully server-generated address. Disabling an alias makes Stalwart reject incoming mail for it. Re-enabling restores delivery for an unexpired address.
 

@@ -176,6 +176,11 @@ export async function createAlias(connection, prefix, description) {
   return result.created.alias;
 }
 
+export async function getAlias(connection, id) {
+  const result = await call(connection, "get", { ids: [id], properties: ["id", "email", "description"] });
+  return result.list?.[0] || null;
+}
+
 export async function setEnabled(connection, id, enable) {
   if (typeof id !== "string" || typeof enable !== "boolean") throw new Error("Invalid address or switch value.");
   const result = await call(connection, "set", { update: { [id]: { enable } } });
