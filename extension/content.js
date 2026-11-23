@@ -11,7 +11,7 @@
 
   const ICON = `<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#dd2b55"/><path d="M9 21l23 12 23-12v19c0 6-4 10-10 10-5 0-10-4-13-8-3 4-8 8-13 8-6 0-10-4-10-10z" fill="#fffefa"/><path d="m16 32 10 5-10 1zm32 0-10 5 10 1z" fill="#dd2b55"/></svg>`;
   const STYLE = `
-    :host { all: initial; position: fixed; z-index: 2147483647; display: block; }
+    :host { all: initial; position: absolute; z-index: 2147483647; display: block; }
     button { all: unset; box-sizing: border-box; display: block; width: 100%; height: 100%; cursor: pointer; border-radius: 22%;
       transition: transform .12s ease, opacity .12s ease; opacity: .92; }
     button:hover { transform: scale(1.08); opacity: 1; }
@@ -122,6 +122,8 @@
       event.stopPropagation();
       if (event.isTrusted) create(input, entry);
     });
+    // place() moves the button from wherever it is, so start it at its containing block's origin.
+    Object.assign(host.style, { left: "0px", top: "0px" });
     document.documentElement.append(host);
     tracked.set(input, entry);
     resizes.observe(input);
@@ -136,16 +138,37 @@
     tracked.delete(input);
   }
 
+  // Fields in a fixed or sticky box do not scroll with the page, so neither may their button.
+  function pinned(input) {
+    for (let node = input; node; node = node.offsetParent) if (/fixed|sticky/.test(getComputedStyle(node).position)) return true;
+    return false;
+  }
+
+  // The button sits in document coordinates (position: absolute), so the browser scrolls and zooms it with
+  // the page itself; script-driven fixed positioning lags behind compositor scrolling, notably on iOS.
   function place(input, entry) {
     if (!input.isConnected) return untrack(input);
-    if (!visible(input)) { entry.host.style.display = "none"; return; }
+    const { host } = entry;
+    if (!visible(input)) { host.style.display = "none"; return; }
     const rect = input.getBoundingClientRect();
     const size = Math.round(Math.max(16, Math.min(outside ? 28 : 22, rect.height - (outside ? 4 : 10))));
-    const left = outside ? rect.right + 6 : rect.right - size - 8;
-    Object.assign(entry.host.style, {
-      display: "block", width: size + "px", height: size + "px",
-      left: Math.round(left) + "px", top: Math.round(rect.top + (rect.height - size) / 2) + "px"
+    // Kept inside the page's width, so a button beside a full-width field never adds sideways scrolling.
+    const left = Math.min(outside ? rect.right + 6 : rect.right - size - 8, document.documentElement.clientWidth - size);
+    const top = rect.top + (rect.height - size) / 2;
+    entry.pinned = pinned(input);
+    // shortcut: a sticky field's button is fixed and follows scrolling from script, so it lags like before; fine while sticky sign-up fields are rare.
+    update(host.style, { display: "block", position: entry.pinned ? "fixed" : "absolute", width: size + "px", height: size + "px" });
+    // Move by the measured offset, which covers scrolling and a positioned or transformed <html>.
+    const at = host.getBoundingClientRect();
+    update(host.style, {
+      left: Math.round(parseFloat(host.style.left) + left - at.left) + "px",
+      top: Math.round(parseFloat(host.style.top) + top - at.top) + "px"
     });
+  }
+
+  // Writes only what changed, so re-checking an unmoved field costs no style or layout work.
+  function update(style, values) {
+    for (const [key, value] of Object.entries(values)) if (style[key] !== value) style[key] = value;
   }
 
   let frame = 0;
@@ -171,11 +194,21 @@
     }, 250);
   }
 
-  const mutations = new MutationObserver(scan);
+  // The buttons' own placement and insertion are not page changes, and would otherwise re-scan the page each time.
+  const ours = node => node.localName === "maskedemail-button";
+  const foreign = record => record.type === "attributes" ? !ours(record.target) : ![...record.addedNodes, ...record.removedNodes].every(ours);
+  const mutations = new MutationObserver(records => records.some(foreign) && scan());
+
+  // Page scrolling carries the buttons natively. Scroll boxes inside the page move their fields away from
+  // the buttons, and pinned buttons are fixed, so those are placed again.
+  function scrolled(event) {
+    if (event.target !== document || [...tracked.values()].some(entry => entry.pinned)) placeAll();
+  }
+
   let layoutTimer = 0;
   function start() {
     mutations.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["type", "style", "class", "hidden"] });
-    addEventListener("scroll", placeAll, { capture: true, passive: true });
+    addEventListener("scroll", scrolled, { capture: true, passive: true });
     addEventListener("resize", placeAll, { passive: true });
     // Pages also move fields with animations and layout changes no observer reports.
     layoutTimer = setInterval(() => tracked.size && placeAll(), 500);
@@ -183,7 +216,7 @@
   }
   function stop() {
     mutations.disconnect();
-    removeEventListener("scroll", placeAll, { capture: true });
+    removeEventListener("scroll", scrolled, { capture: true });
     removeEventListener("resize", placeAll);
     clearInterval(layoutTimer);
     for (const input of [...tracked.keys()]) untrack(input);
