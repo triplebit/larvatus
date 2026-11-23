@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Alias Ledger</title><link rel="stylesheet" href="style.css"><script type="module" src="popup.js"></script></head>
+<body class="popup">
+<header><img src="icon.svg" width="30" height="30" alt=""><strong>Alias Ledger</strong><button id="account" class="quiet trailing">Account ↗</button></header>
+<main>
+  <section id="welcome" hidden><h1>Masked addresses</h1><p>Connect your Stalwart account to create and manage aliases.</p><button id="setup" class="primary">Connect to Stalwart <span aria-hidden="true">↗</span></button></section>
+  <div id="workspace" hidden>
+    <form id="composer" class="composer">
+      <h1>New address</h1>
+      <label for="prefix">Prefix <small>Optional</small></label>
+      <input id="prefix" maxlength="64" pattern="[A-Za-z0-9][A-Za-z0-9_]{0,63}" title="Start with a letter or digit. Use letters, digits or underscores." placeholder="Random prefix" spellcheck="false" autocomplete="off">
+      <label for="description">Description <small>Optional</small></label>
+      <input id="description" placeholder="What’s this address for?" autocomplete="off">
+      <button class="primary" id="create"><span aria-hidden="true">＋</span> Create address</button>
+    </form>
+    <section class="collection" aria-labelledby="list-title">
+      <div class="section-head"><h2 id="list-title">Your addresses</h2><button id="reload" class="quiet trailing">Refresh</button></div>
+      <div class="search-box"><input aria-label="Search addresses and descriptions" type="search" id="search" placeholder="Search addresses and descriptions"></div>
+      <div class="meta"><span id="count"></span><span>Newest first ↓</span></div>
+      <ul id="aliases" aria-label="Masked addresses"></ul><p id="empty" class="empty" hidden></p>
+    </section>
+  </div>
+</main>
+<p id="notice" role="status">Loading…</p>
+<template id="row">
+  <li><div class="row-head"><button class="copy" title="Copy address"></button><button type="button" role="switch" class="switch"><span></span></button></div>
+  <div class="description"></div><div class="date"></div></li>
+</template>
+</body></html>

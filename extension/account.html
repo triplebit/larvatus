@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Account · Alias Ledger</title><link rel="stylesheet" href="style.css"><script type="module" src="account.js"></script></head>
+<body class="settings"><main class="account-card">
+  <header><img src="icon.svg" width="35" height="35" alt=""><strong>Alias Ledger</strong></header>
+  <section id="signin" hidden>
+    <h1>Connect to Stalwart</h1>
+    <p>Enter your mail server to sign in and manage your masked addresses.</p>
+    <form id="connect-form">
+      <label for="server">Server address</label>
+      <input id="server" placeholder="mail.example.com" required autocomplete="url" autocapitalize="none" spellcheck="false">
+      <button id="connect" class="primary">Sign in with Stalwart <span aria-hidden="true">↗</span></button>
+    </form>
+  </section>
+  <section id="connected" hidden>
+    <h1>Connected account</h1><strong id="user"></strong><div class="muted" id="host"></div>
+    <p>Open Alias Ledger in the Firefox toolbar to manage your masked addresses.</p>
+    <button id="disconnect">Disconnect account</button>
+  </section>
+  <p id="notice" role="status"></p>
+</main></body></html>
