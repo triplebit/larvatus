@@ -1,6 +1,6 @@
 # MaskedEmail
 
-A Firefox and Chrome toolbar extension for Stalwart masked addresses. Create an address with a random or custom prefix, search by address or description, click an address to copy it, and switch delivery on or off. Stalwart generates the address and suffix. When the popup opens on a website, the prefix defaults to the site’s name (`google` for mail.google.com) and the description to “Created on mail.google.com”. Edit or clear either before creating. The list uses the native creation timestamp, newest first.
+A Firefox and Chrome toolbar extension for Stalwart masked addresses. Create an address with a random or custom prefix, search by address or description, click an address to copy it, switch delivery on or off, and delete it (the popup asks you to confirm first). Stalwart generates the address and suffix. When the popup opens on a website, the prefix defaults to the site’s name (`google` for mail.google.com) and the description to “Created on mail.google.com”. Edit or clear either before creating. The list uses the native creation timestamp, newest first.
 
 ## Load in Firefox
 
@@ -36,7 +36,7 @@ Use Stalwart 1.0.3 or later with its built-in OAuth server, public client regist
 
 The requested scope is `urn:stalwart:oauth:scope:settings`, which Stalwart uses for masked addresses. Tokens are kept in local Firefox extension storage. Alias lists stay in memory while the popup is open. Search runs locally. **Settings → Disconnect account** clears local credentials and requests token revocation.
 
-Stalwart accepts custom prefixes of up to 64 ASCII letters, digits, and underscores, starting with a letter or digit. Leave the prefix blank for one random letter or digit, which keeps the address short; Stalwart invents a much longer prefix when none is sent. Disabling an alias makes Stalwart reject incoming mail for it. Re-enabling restores delivery for an unexpired address.
+Stalwart accepts custom prefixes of up to 64 ASCII letters, digits, and underscores, starting with a letter or digit. Leave the prefix blank for one random letter or digit, which keeps the address short; Stalwart invents a much longer prefix when none is sent. Disabling an alias makes Stalwart reject incoming mail for it. Re-enabling restores delivery for an unexpired address. Deleting an alias removes it from Stalwart for good, and mail to it is no longer delivered.
 
 [Stalwart masked email](https://stalw.art/docs/email/management/masked-email/) · [OAuth scopes](https://stalw.art/docs/auth/oauth/scopes/) · [Firefox identity API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/identity)
 

@@ -88,6 +88,7 @@ function render() {
       }
       notice(alias.enable ? "Delivery enabled." : "Delivery disabled.");
     });
+    confirmDelete(row, alias);
     row.querySelector(".description").textContent = alias.description || alias.forDomain || "";
     const created = Date.parse(alias.createdAt);
     const date = Number.isFinite(created) ? "Created " + dateFormat.format(created) : "";
@@ -95,6 +96,31 @@ function render() {
     fragment.append(row);
   }
   byId("aliases").replaceChildren(fragment);
+}
+
+// Deleting asks inside the row: some browsers close the popup for a native confirm() dialog.
+function confirmDelete(row, alias) {
+  const remove = row.querySelector(".delete");
+  const box = row.querySelector(".confirm");
+  const text = box.querySelector("p");
+  const [yes, cancel] = box.querySelectorAll("button");
+  remove.setAttribute("aria-label", "Delete " + alias.email);
+  text.id = "confirm-" + alias.id;
+  text.textContent = "Delete " + alias.email + "? Mail sent to it will no longer be delivered. This cannot be undone.";
+  box.setAttribute("aria-labelledby", text.id);
+  remove.onclick = () => { box.hidden = false; cancel.focus(); };
+  cancel.onclick = () => { box.hidden = true; remove.focus(); };
+  yes.onclick = () => act(async () => {
+    yes.disabled = true;
+    try { await send("delete", { key: account.key, id: alias.id }); }
+    finally { yes.disabled = false; }
+    aliases = aliases.filter(item => item.id !== alias.id);
+    if (justCreated === alias.email) justCreated = null;
+    render();
+    // The row and its focused button are gone. The heading, unlike the search box, opens no keyboard on a phone.
+    Object.assign(byId("list-title"), { tabIndex: -1 }).focus();
+    notice("Address deleted.");
+  });
 }
 
 async function load() {

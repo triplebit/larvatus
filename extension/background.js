@@ -1,8 +1,8 @@
 import "./compat.js";
 import { FIELD_ORIGINS, loadSettings } from "./options.js";
 import { siteDefaults } from "./site.js";
-import { PREFIX_PATTERN, authorize, completeAuthorization, createAlias, getAlias, hostPattern, isChromium, listAliases, prepareAuthorization,
-  redirectUri, refresh, revoke, serverOrigin, session, setEnabled } from "./stalwart.js";
+import { PREFIX_PATTERN, authorize, completeAuthorization, createAlias, deleteAlias, getAlias, hostPattern, isChromium, listAliases,
+  prepareAuthorization, redirectUri, refresh, revoke, serverOrigin, session, setEnabled } from "./stalwart.js";
 
 const store = browser.storage.local;
 function summary(connection) {
@@ -43,6 +43,9 @@ async function handle(message) {
         return listAliases(connection);
       case "create": return createAlias(connection, message.prefix, message.description);
       case "toggle": return setEnabled(connection, message.id, message.enable);
+      case "delete":
+        await deleteAlias(connection, message.id);
+        return null;
       default: throw new Error("Unknown action.");
     }
   });

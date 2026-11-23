@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { aliasPage, authorize, redirectUri, createAlias, listAliases, refresh, serverOrigin, setEnabled } from "../extension/stalwart.js";
+import { aliasPage, authorize, redirectUri, createAlias, deleteAlias, listAliases, refresh, serverOrigin, setEnabled } from "../extension/stalwart.js";
 
 const origin = "https://mail.example.org";
 const settings = "urn:stalwart:oauth:scope:settings";
@@ -106,10 +106,24 @@ test("sends one random character for a blank prefix, the site origin when given,
     { update: { b: { enable: false } } }]);
 });
 
-test("propagates creation and toggle failures", async t => {
-  jmap(t, () => ({ notCreated: { alias: { type: "overQuota" } }, notUpdated: { b: { type: "forbidden" } } }));
+test("propagates creation, toggle and delete failures", async t => {
+  jmap(t, () => ({ notCreated: { alias: { type: "overQuota" } }, notUpdated: { b: { type: "forbidden" } },
+    destroyed: ["other"], notDestroyed: { b: { type: "notFound", description: "No such address." } } }));
   await assert.rejects(createAlias(connection, "", ""), error => error.type === "overQuota" && /overQuota/.test(error.message));
   await assert.rejects(setEnabled(connection, "b", true), /forbidden/);
+  await assert.rejects(deleteAlias(connection, "b"), error => error.type === "notFound" && error.message === "No such address.");
+});
+
+test("deletes one address by id", async t => {
+  const payloads = [];
+  jmap(t, (verb, args) => {
+    assert.equal(verb, "set");
+    payloads.push(args);
+    return { destroyed: ["b"] };
+  });
+  await deleteAlias(connection, "b");
+  await assert.rejects(deleteAlias(connection, undefined), /Invalid/);
+  assert.deepEqual(payloads, [{ destroy: ["b"] }]);
 });
 
 test("adopts rotated refresh tokens", async t => {

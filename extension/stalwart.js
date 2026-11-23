@@ -214,3 +214,10 @@ export async function setEnabled(connection, id, enable) {
   const result = await call(connection, "set", { update: { [id]: { enable } } });
   if (!Object.hasOwn(result.updated || {}, id)) throw problem(result.notUpdated?.[id]);
 }
+
+// Stalwart then rejects mail to the address; it cannot be restored.
+export async function deleteAlias(connection, id) {
+  if (typeof id !== "string") throw new Error("Invalid address.");
+  const result = await call(connection, "set", { destroy: [id] });
+  if (!Array.isArray(result.destroyed) || !result.destroyed.includes(id)) throw problem(result.notDestroyed?.[id]);
+}
