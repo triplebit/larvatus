@@ -1,13 +1,50 @@
-import { byId, notice, send } from "./ui.js";
+import { beginSignIn, byId, notice, send } from "./ui.js";
 import { siteDefaults } from "./site.js";
 
 let account;
 let aliases = [];
 let loaded = false;
 let busy = false;
+let justCreated = null;
 const dateFormat = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" });
 
+function copyable(button, email) {
+  button.textContent = email;
+  button.setAttribute("aria-label", "Copy " + email);
+  button.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      notice("Address copied.");
+    } catch { notice("Copy failed. Select the address to copy it manually.", true); }
+  };
+  return button;
+}
+
+// Stalwart addresses look like prefix.randomsuffix@domain; prefixes cannot contain dots.
+const prefixOf = email => email.toLowerCase().split("@")[0].split(".")[0];
+
+// The banner above the composer: the address just created, or existing ones that use the typed prefix.
+function renderSpotlight() {
+  let title, emails;
+  if (justCreated) {
+    title = "New alias created, click to copy:";
+    emails = [justCreated];
+  } else {
+    const prefix = byId("prefix").value.trim().toLowerCase();
+    emails = prefix && loaded ? aliases.filter(alias => prefixOf(alias.email) === prefix).map(alias => alias.email) : [];
+    title = emails.length > 1 ? emails.length + " aliases with this prefix already exist:" : "An alias with this prefix already exists:";
+  }
+  const box = byId("spotlight");
+  box.hidden = !emails.length;
+  box.classList.toggle("created", !!justCreated);
+  byId("spotlight-title").textContent = title;
+  const shown = emails.slice(0, 3).map(email => copyable(Object.assign(document.createElement("button"), { type: "button", className: "copy" }), email));
+  if (emails.length > shown.length) shown.push(Object.assign(document.createElement("small"), { textContent: "+" + (emails.length - shown.length) + " more in the list below" }));
+  byId("spotlight-list").replaceChildren(...shown);
+}
+
 function render() {
+  renderSpotlight();
   const needle = byId("search").value.trim().toLowerCase();
   const visible = aliases.filter(alias => [alias.email, alias.description, alias.forDomain]
     .some(value => value?.toLowerCase().includes(needle)));
@@ -17,15 +54,7 @@ function render() {
   const fragment = document.createDocumentFragment();
   for (const alias of visible) {
     const row = byId("row").content.cloneNode(true);
-    const copy = row.querySelector(".copy");
-    copy.textContent = alias.email;
-    copy.setAttribute("aria-label", "Copy " + alias.email);
-    copy.onclick = async () => {
-      try {
-        await navigator.clipboard.writeText(alias.email);
-        notice("Address copied.");
-      } catch { notice("Copy failed. Select the address to copy it manually.", true); }
-    };
+    copyable(row.querySelector(".copy"), alias.email);
     const toggle = row.querySelector(".switch");
     toggle.setAttribute("aria-checked", String(alias.enable));
     toggle.setAttribute("aria-label", "Enable delivery to " + alias.email);
@@ -71,8 +100,18 @@ async function act(action) {
   }
 }
 
-byId("account").onclick = byId("setup").onclick = () => browser.runtime.openOptionsPage();
+byId("account").onclick = () => browser.runtime.openOptionsPage();
+byId("connect-form").onsubmit = event => {
+  event.preventDefault();
+  let signingIn;
+  try { signingIn = beginSignIn(byId("server").value); }
+  catch (error) { notice(error.message, true); return; }
+  byId("connect").disabled = true;
+  notice("Continue in the Stalwart sign-in window. You can reopen MaskedEmail when you’re done.");
+  signingIn.then(start, error => notice(error.message, true)).finally(() => { byId("connect").disabled = false; });
+};
 byId("search").oninput = render;
+byId("prefix").oninput = () => { justCreated = null; renderSpotlight(); };
 byId("reload").onclick = () => act(load);
 byId("composer").onsubmit = event => {
   event.preventDefault();
@@ -80,10 +119,17 @@ byId("composer").onsubmit = event => {
     const created = await send("create", { key: account.key, prefix: byId("prefix").value.trim(), description: byId("description").value.trim() });
     byId("composer").reset();
     byId("search").value = "";
-    const confirmation = created.email ? "Created " + created.email : "Address created.";
-    notice(confirmation);
-    try { await load(); }
-    catch { notice(confirmation + " Refresh to reload the list.", true); }
+    justCreated = created.email || null;
+    try {
+      await load();
+      // Stalwart may leave the generated address out of the create response.
+      justCreated = aliases.find(alias => alias.id === created.id)?.email || justCreated;
+      renderSpotlight();
+      if (!justCreated) notice("Address created.");
+    } catch {
+      renderSpotlight();
+      notice((justCreated ? "" : "Address created. ") + "Refresh to reload the list.", true);
+    }
   });
 };
 
@@ -94,12 +140,22 @@ async function prefill() {
   if (!defaults) return;
   byId("prefix").defaultValue = defaults.prefix;
   byId("description").defaultValue = defaults.description;
+  renderSpotlight();
+}
+
+// Sign-in may have carried on in the background after this popup last closed.
+async function showSignInState() {
+  const state = await send("signin-state");
+  if (state.origin && !byId("server").value) byId("server").value = new URL(state.origin).host;
+  if (state.error) notice(state.error, true);
+  else if (state.active) notice("Finish signing in in the Stalwart window.");
 }
 
 async function start() {
   prefill().catch(() => {});
   account = await send("status");
   notice();
+  if (!account) await showSignInState();
   byId("welcome").hidden = !!account;
   byId("account").hidden = !account;
   byId("workspace").hidden = !account;

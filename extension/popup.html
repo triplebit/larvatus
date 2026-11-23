@@ -3,8 +3,17 @@
 <body class="popup">
 <header><img src="icon.svg" width="30" height="30" alt=""><strong>MaskedEmail</strong><button id="account" class="quiet trailing">Account ↗</button></header>
 <main>
-  <section id="welcome" hidden><h1>Masked addresses</h1><p>Connect your Stalwart account to create and manage aliases.</p><button id="setup" class="primary">Connect to Stalwart <span aria-hidden="true">↗</span></button></section>
+  <section id="welcome" hidden>
+    <h1>Connect to Stalwart</h1>
+    <p>Enter your mail server to sign in and manage your masked addresses.</p>
+    <form id="connect-form" class="connect">
+      <label for="server">Server address</label>
+      <input id="server" placeholder="mail.example.com" required autocomplete="url" autocapitalize="none" spellcheck="false">
+      <button id="connect" class="primary">Sign in with Stalwart <span aria-hidden="true">↗</span></button>
+    </form>
+  </section>
   <div id="workspace" hidden>
+    <section id="spotlight" class="spotlight" hidden aria-live="polite"><p id="spotlight-title"></p><div id="spotlight-list"></div></section>
     <form id="composer" class="composer">
       <h1>New address</h1>
       <label for="prefix">Prefix <small>Optional</small></label>

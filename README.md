@@ -6,8 +6,8 @@ A Firefox toolbar extension for Stalwart masked addresses. Create an address wit
 
 1. Open `about:debugging#/runtime/this-firefox` in Firefox 140 or later.
 2. Click **Load Temporary Add-on…** and select **masked-email.xpi**, or select **extension/manifest.json** to load the source.
-3. Open **MaskedEmail** from the extensions menu and click **Connect to Stalwart**. Pin it to the toolbar for quick access.
-4. Enter the canonical HTTPS address of your Stalwart server, allow Firefox to connect, then sign in and approve account settings access on Stalwart.
+3. Open **MaskedEmail** from the extensions menu. Pin it to the toolbar for quick access.
+4. Enter the canonical HTTPS address of your Stalwart server and click **Sign in with Stalwart**. Allow Firefox to connect, then sign in and approve account settings access on Stalwart. Firefox may close the popup during these steps. Sign-in finishes in the background, so reopen MaskedEmail afterwards.
 
 The included package is unsigned. Firefox removes temporarily loaded extensions on restart. A permanent installation in standard Firefox requires Mozilla signing.
 

@@ -11,6 +11,9 @@ export function serverOrigin(value) {
   return url.origin;
 }
 
+// The host permission Firefox must grant before the extension can reach this server.
+export const hostPattern = origin => "https://" + new URL(origin).hostname + "/*";
+
 function endpoint(value, origin) {
   if (!value) throw new Error("A required server endpoint is missing.");
   const url = new URL(value, origin);
