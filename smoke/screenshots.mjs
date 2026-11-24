@@ -1,16 +1,18 @@
-// Store screenshots of the Chrome build against the fake Stalwart in server.mjs, at 1280x800 in
-// store/screenshots/. Same browser requirements as chrome.mjs:
+// Store screenshots of the Chrome build against the fake Stalwart in server.mjs: 1280x800 posters in
+// store/screenshots/, composed in poster.mjs around live 2x captures of the extension. Same browser requirements as chrome.mjs:
 //   CHROME_PATH=... PUPPETEER_SKIP_DOWNLOAD=1 node smoke/screenshots.mjs
 import { execFileSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import puppeteer from "puppeteer";
+import { callout, copy, diagram, DIAGRAM_CSS, lockup, mask, poster, shot } from "./poster.mjs";
 import { origin, start } from "./server.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const out = join(root, "store/screenshots");
+rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 execFileSync("node", ["scripts/build.mjs"], { cwd: root, stdio: "ignore" });
 
@@ -65,6 +67,22 @@ const SIGNUP = `<!doctype html><meta charset="utf-8"><title>Join Wrenfield Books
 <button>Create account</button></form></div>
 <script>document.forms[0].addEventListener("submit", event => event.preventDefault());</script>`;
 
+
+// A 2x capture of the clip (CSS pixels) with the rects of the named elements relative to it.
+async function capture(page, clip, targets = {}) {
+  const rects = await page.evaluate(targets => Object.fromEntries(Object.entries(targets).map(([name, selector]) => {
+    const { x, y, width, height } = document.querySelector(selector).getBoundingClientRect();
+    return [name, { x, y, width, height }];
+  })), targets);
+  for (const rect of Object.values(rects)) { rect.x -= clip.x; rect.y -= clip.y; }
+  const png = await page.screenshot({ clip, encoding: "base64" });
+  return { src: "data:image/png;base64," + png, width: clip.width, height: clip.height, rects };
+}
+const rectOf = (page, selector) => page.$eval(selector, element => {
+  const { x, y, width, height } = element.getBoundingClientRect();
+  return { x, y, width, height };
+});
+
 const server = await start();
 server.aliases.push(...seed);
 const browser = await puppeteer.launch({
@@ -76,7 +94,6 @@ const browser = await puppeteer.launch({
 try {
   const worker = await browser.waitForTarget(target => target.type() === "service_worker" && target.url().endsWith("/background.js"), { timeout: 15000 });
   const base = "chrome-extension://" + new URL(worker.url()).host;
-  const shot = (page, name) => page.screenshot({ path: join(out, name) });
 
   // Sign in as chrome.mjs does, then turn on the field button so the popup shows no hint about it.
   const settings = await browser.newPage();
@@ -91,62 +108,139 @@ try {
   await until("the account in Settings", () => settings.evaluate(() => !document.getElementById("connected").hidden));
   await settings.click("#field-button");
   await until("the field button switch", () => settings.evaluate(() => document.getElementById("field-button").getAttribute("aria-checked") === "true"));
+  const setSettings = value => settings.evaluate(value => chrome.storage.local.set({ settings: value }), value);
 
-  // The popup at its real width and Chrome's 600px popup height, on a plain backdrop.
-  async function popup(backdrop) {
+  // The popup at its real width, sharp at 2x; height 600 is Chrome's popup limit.
+  async function popup(height = 600) {
     const page = await browser.newPage();
+    await page.setViewport({ width: 475, height, deviceScaleFactor: 2 });
     await page.goto(base + "/popup.html");
     await until("the list", () => page.$$eval("#aliases li", (rows, count) => rows.length === count, server.aliases.length));
-    // :root to outrank style.css's own; overflow on the root so the body clips instead of the viewport.
-    await page.addStyleTag({ content: `:root { height: 100vh; overflow: hidden; display: grid; place-items: center; background: ${backdrop}; }
-      body { height: 600px; overflow: hidden; background: var(--page); border-radius: 12px; box-shadow: 0 24px 64px rgb(0 0 0 / .2), 0 2px 8px rgb(0 0 0 / .08); }` });
     return page;
   }
+  const row = n => `#aliases li:nth-child(${n})`;
+  const whole = { x: 0, y: 0, width: 475, height: 600 };
 
-  const list = await popup("#e4e0d8");
-  await shot(list, "1-popup.png");
-
+  const list = await popup();
+  const light = await capture(list, whole);
   await list.type("#prefix", "wikipedia");
   await list.type("#description", "Created on wikipedia.org");
   await list.evaluate(() => document.activeElement.blur());
-  await shot(list, "2-create.png");
+  const composer = await rectOf(list, "#composer");
+  const create = await capture(list, { x: 0, y: 0, width: 475, height: composer.y + composer.height + 150 }, { create: "#create" });
 
-  const removing = await popup("#e4e0d8");
-  await removing.click("#aliases li:first-child .delete");
-  // Focusing Cancel scrolls the clipped body; keep the header in view.
-  await removing.evaluate(() => { document.body.scrollTop = 0; });
-  await shot(removing, "5-delete.png");
+  // A tall viewport for the two captures that must not cut the third row off: a popup that runs off the
+  // poster's bottom edge, and three rows on their own.
+  const tall = await popup(1000);
+  const long = await capture(tall, { ...whole, height: 700 }, { copy: row(1) + " .copy", off: row(3) + " .switch" });
+  const [first, third] = [await rectOf(tall, row(1)), await rectOf(tall, row(3))];
+  const rows = await capture(tall, { x: 0, y: first.y + 1, width: 475, height: third.y + third.height - first.y - 1 }, { off: row(3) + " .switch" });
 
-  await settings.evaluate(() => chrome.storage.local.set({ settings: { theme: "dark", fieldButton: true } }));
-  await shot(await popup("#3a3a3d"), "1-popup-dark.png");
-  await settings.evaluate(() => chrome.storage.local.set({ settings: { theme: "light", fieldButton: true } }));
+  await setSettings({ theme: "dark", fieldButton: true });
+  const dark = await capture(await popup(), whole);
 
+  // The field button, with addresses named after the site for this one shot.
+  await setSettings({ theme: "light", fieldButton: true, fieldPrefix: "site" });
   const site = await browser.newPage();
+  await site.setViewport({ width: 1280, height: 800, deviceScaleFactor: 2 });
   await site.setRequestInterception(true);
   site.on("request", request => request.url() === SITE ? request.respond({ contentType: "text/html", body: SIGNUP }) : request.continue());
   await site.goto(SITE);
   await until("the field button", () => site.$$eval("larvatus-button", hosts => hosts.length === 1));
   await sleep(500);
-  const [spot] = await site.$$eval("larvatus-button", hosts => hosts.map(host => {
-    const rect = host.getBoundingClientRect();
-    return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
-  }));
-  await site.mouse.click(spot.x, spot.y);
+  const button = await rectOf(site, "larvatus-button");
+  await site.mouse.click(button.x + button.width / 2, button.y + button.height / 2);
   await until("the address in the field", () => site.$eval("#email", input => input.value.endsWith("@example.org")));
+  const filled = await site.$eval("#email", input => input.value);
+  if (!/^wrenfield\.\w+@example\.org$/.test(filled)) throw new Error("Unexpected address " + filled);
   await site.mouse.move(0, 0);
   await sleep(300);
-  await shot(site, "3-field-button.png");
+  const card = await rectOf(site, ".card");
+  const pad = 44;
+  const signup = await capture(site, { x: card.x - pad, y: card.y - pad, width: card.width + 2 * pad, height: card.height + 2 * pad }, { button: "larvatus-button" });
+  await setSettings({ theme: "light", fieldButton: true });
 
-  await settings.reload();
-  await until("the account in Settings", () => settings.evaluate(() => !document.getElementById("connected").hidden));
-  // The fake server's localhost origin and test account, shown as a person's own would be.
-  await settings.evaluate(() => {
-    document.getElementById("user").textContent = "sam@example.org";
-    document.getElementById("host").textContent = "https://mail.example.org";
-  });
-  await shot(settings, "4-settings.png");
+  // Compose each poster and screenshot it at 1280x800.
+  const canvas = await browser.newPage();
+  await canvas.setViewport({ width: 1280, height: 800, deviceScaleFactor: 1 });
+  async function render(name, html) {
+    await canvas.setContent(html, { waitUntil: "load" });
+    await canvas.evaluate(() => document.fonts.ready);
+    await canvas.screenshot({ path: join(out, name) });
+  }
+
+  {
+    const ui = shot(long, { x: 548, y: 72, scale: 1.1 });
+    await render("1-addresses.png", poster(`
+      <div class="panel" style="left: 610px; top: 30px; width: 560px; height: 820px; transform: rotate(7deg); background: linear-gradient(160deg, #e43a62, #c4214a)"></div>
+      ${lockup("left: 64px; top: 52px")}
+      ${copy("left: 80px; top: 158px; width: 410px", "A separate address for *every site.*",
+        "Create and manage masked addresses on your own Stalwart mail server.")}
+      ${ui.html}
+      ${callout(ui.at("copy", 0, .5), "left", "Click to copy")}
+      ${callout(ui.at("off", 1, .5), "right", "Off: your server<br>rejects its mail")}`,
+      `.callout.right span { border-radius: 18px; line-height: 1.3; }`));
+  }
+  {
+    const scale = 1.12;
+    const ui = shot(signup, { x: 72, y: 168, scale, className: "page" });
+    await render("2-field-button.png", poster(`
+      <div style="left: 40px; top: 40px; width: 900px; height: 900px; background: radial-gradient(closest-side, rgb(221 43 85 / .18), transparent)"></div>
+      <div class="window" style="left: 72px; top: 122px; width: ${signup.width * scale}px; height: 760px">
+        <div class="bar"><i></i><i></i><i></i><span>wrenfield.example/join</span></div></div>
+      ${ui.html}
+      ${lockup("right: 64px; top: 52px")}
+      ${copy("left: 790px; top: 220px; width: 420px", "Sign up without giving out *your address.*",
+        "An optional button on email fields creates a masked address and fills it in.")}
+      ${callout(ui.at("button", 1, .5), "right", "One click: new address, filled in")}`,
+      `.window { overflow: hidden; border-radius: 14px; background: #eef2f0; box-shadow: 0 32px 80px rgb(30 50 45 / .22), 0 4px 14px rgb(0 0 0 / .08); }
+       .bar { display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 18px; background: #fffefa; border-bottom: 1px solid var(--line); }
+       .bar i { width: 12px; height: 12px; border-radius: 50%; background: #dcd7ce; }
+       .bar span { margin-left: 22px; flex: 1; max-width: 360px; padding: 5px 14px; border-radius: 999px; background: #efeae0; color: var(--muted); font-size: 14px; }`));
+  }
+  {
+    const scale = 1.36, x = Math.round((1280 - create.width * scale) / 2);
+    const ui = shot(create, { x, y: 272, scale });
+    await render("3-create.png", poster(`
+      <div style="left: 140px; top: 120px; width: 1000px; height: 900px; background: radial-gradient(closest-side, rgb(221 43 85 / .16), transparent)"></div>
+      <div class="panel" style="left: ${x - 90}px; top: 320px; width: 500px; height: 600px; transform: rotate(-8deg); background: var(--soft); border: 1px solid #f5c8d3"></div>
+      <div class="panel" style="left: ${x + 260}px; top: 300px; width: 500px; height: 600px; transform: rotate(6deg); background: linear-gradient(160deg, #e43a62, #c4214a)"></div>
+      ${lockup("left: 64px; top: 52px")}
+      ${copy("left: 0; top: 104px; width: 1280px", "Name it, or leave it *random.*",
+        "Add a prefix and a note, so you know what each address is for.", "center")}
+      ${ui.html}
+      ${callout(ui.at("create", 1, .5), "right", "Your server generates the rest")}`));
+  }
+  {
+    const scale = 1.4;
+    const ui = shot(rows, { x: 556, y: 196, scale, pad: 14 });
+    await render("4-switch-off.png", poster(`
+      ${mask("left: 76px; top: 500px; width: 400px; color: rgb(255 255 255 / .1)")}
+      ${lockup("left: 64px; top: 52px")}
+      ${copy("left: 80px; top: 210px; width: 430px", "Too much mail? *Switch it off.*",
+        "Your server rejects mail to an address that is off. Switch it back on any time, or delete it.")}
+      ${ui.html}
+      ${callout(ui.at("off", .5, 1), "bottom", "Off: mail is rejected", { shift: -50, dark: true })}`,
+      `.ui { box-shadow: 0 36px 90px rgb(80 0 20 / .4), 0 4px 14px rgb(0 0 0 / .15); }`, "red"));
+  }
+  await render("5-your-server.png", poster(`
+    <div style="left: 560px; top: 260px; width: 680px; height: 600px; background: radial-gradient(closest-side, rgb(221 43 85 / .16), transparent)"></div>
+    ${lockup("left: 64px; top: 52px")}
+    ${copy("left: 80px; top: 150px; width: 900px", "Your real address *stays private.*",
+      "Larvatus talks only to your own Stalwart server. No servers of its own, no analytics, no tracking.")}
+    ${diagram()}`, DIAGRAM_CSS));
+  {
+    const back = shot(light, { x: 500, y: 176, scale: 1.08 });
+    const front = shot(dark, { x: 712, y: 262, scale: 1.08, style: "box-shadow: 0 40px 90px rgb(0 0 0 / .55), 0 0 0 1px rgb(255 255 255 / .06)" });
+    await render("6-dark.png", poster(`
+      <div style="inset: 0; background: linear-gradient(160deg, #1f1f21, var(--dark)); clip-path: polygon(900px 0, 1280px 0, 1280px 800px, 600px 800px)"></div>
+      ${lockup("left: 64px; top: 52px")}
+      ${copy("left: 80px; top: 220px; width: 390px", "Light or *dark.*", "Follows your browser’s theme, or choose one in Settings.")}
+      ${back.html}${front.html}`));
+  }
   console.log("Screenshots in " + out);
 } finally {
   await browser.close();
   server.close();
 }
+
