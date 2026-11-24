@@ -1,19 +1,25 @@
-# Store listing text for Larvatus 1.0.1
+# Store listing text for Larvatus 1.1.0
 
 Text to paste into addons.mozilla.org (AMO) and the Chrome Web Store (CWS). Each block under a heading is meant to be pasted as it stands. Publisher on both stores: Triplebit Corporation.
 
 ## 1. Name and summary
 
-Name:
+Name on AMO:
 
 ```
 Larvatus
 ```
 
-Summary (AMO "Summary", limit 250 characters) and short description (CWS, taken from the manifest `description`, limit 132 characters). The manifest description is 60 characters, so it fits both and is reused as is (it keeps the manifest's wording, without the Oxford comma):
+Name on the CWS (75 characters at most), chosen by the owner so that Chrome Web Store search finds it. 41 characters. It is the Chrome manifest's `name`, which `scripts/build.mjs` sets:
 
 ```
-Create, find and switch Stalwart masked addresses on or off.
+Larvatus: Email Aliases for Stalwart Mail
+```
+
+Summary (AMO "Summary", limit 250 characters) and short description (CWS, taken from the manifest `description`, limit 132 characters). The manifest description is 88 characters, so it fits both and is reused as is. The owner chose the wording:
+
+```
+Create, search for, and switch on and off Stalwart Mail Server's masked email addresses.
 ```
 
 ## 2. Long description

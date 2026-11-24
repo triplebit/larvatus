@@ -72,7 +72,7 @@ Build both store packages from the project root. This also refreshes `larvatus.x
 node scripts/build.mjs
 ```
 
-The build writes `dist/firefox` and `dist/chrome`, plus `dist/larvatus-<version>-firefox.zip` and `dist/larvatus-<version>-chrome.zip`. The Chrome manifest is derived from the Firefox one: a service worker instead of background scripts, the PNG icons in `extension/icons`, and no Firefox-only keys. Both browsers share the same code; `compat.js` maps `browser` to `chrome` where needed.
+The build writes `dist/firefox` and `dist/chrome`, plus `dist/larvatus-<version>-firefox.zip` and `dist/larvatus-<version>-chrome.zip`. The Chrome manifest is derived from the Firefox one: a service worker instead of background scripts, the PNG icons in `extension/icons`, no Firefox-only keys, and the longer name the Chrome Web Store listing uses ("Larvatus: Email Aliases for Stalwart Mail"). Both browsers share the same code; `compat.js` maps `browser` to `chrome` where needed.
 
 The end-to-end test drives a headless Chromium with the Chrome build against a fake Stalwart server. It installs Puppeteer under `smoke/`. Set `CHROME_PATH` to use Chromium or Brave instead of Puppeteer's own Chrome.
 

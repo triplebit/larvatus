@@ -2,7 +2,7 @@
 //   node scripts/build.mjs
 // extension/manifest.json is the Firefox manifest, so the folder also loads directly in Firefox.
 // The Chrome manifest is derived from it: a service worker instead of background scripts, PNG
-// icons (Chrome does not accept SVG there), and no Firefox-only keys.
+// icons (Chrome does not accept SVG there), no Firefox-only keys, and a longer name.
 import { execFileSync } from "node:child_process";
 import { copyFile, cp, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
@@ -19,6 +19,8 @@ const targets = {
   firefox: manifest,
   chrome: (({ browser_specific_settings, background, ...rest }) => ({
     ...rest,
+    // The Chrome Web Store searches the name, so it says what the extension is for. Elsewhere it is just "Larvatus".
+    name: "Larvatus: Email Aliases for Stalwart Mail",
     minimum_chrome_version: "121",
     background: { service_worker: background.scripts[0], type: background.type },
     icons: png([16, 32, 48, 128]),

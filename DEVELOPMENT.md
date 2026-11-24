@@ -28,7 +28,7 @@ The apps' repository uses `smoke/server.mjs` and `smoke/poster.mjs` for its App 
 
 ## Layout
 
-- `extension/manifest.json` is the Firefox manifest. `scripts/build.mjs` derives the Chrome one (service worker, PNG icons from `extension/icons`, optional access to `http://127.0.0.1/*`).
+- `extension/manifest.json` is the Firefox manifest. `scripts/build.mjs` derives the Chrome one (service worker, PNG icons from `extension/icons`, optional access to `http://127.0.0.1/*`, and the name "Larvatus: Email Aliases for Stalwart Mail", which the owner chose on 2026-11-24 for Chrome Web Store search; Firefox and Safari keep "Larvatus").
 - `background.js` owns the account, tokens and every server call. Pages talk to it through `send()` in `ui.js`. All requests run through one queue so refresh-token rotation stays ordered.
 - `stalwart.js` is the OAuth and JMAP client and has no browser APIs in it, which is why it is unit-tested directly.
 - `content.js` and `fields.js` are the on-page email field button. They are classic scripts (content scripts cannot be modules) and are registered only while the setting is on and site access is granted.

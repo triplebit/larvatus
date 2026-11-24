@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Larvatus",
-  "version": "1.0.1",
-  "description": "Create, find and switch Stalwart masked addresses on or off.",
+  "version": "1.1.0",
+  "description": "Create, search for, and switch on and off Stalwart Mail Server's masked email addresses.",
   "homepage_url": "https://larvat.us/",
   "browser_specific_settings": {
     "gecko": {
