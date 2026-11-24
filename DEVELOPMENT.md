@@ -56,13 +56,13 @@ Verified:
 - Unit tests pass. `smoke/chrome.mjs` passes in Brave on macOS, after the rename and after the Settings rework (default prefix under General, optional site data, Autofill hidden when signed out, logo red in dark mode). It also checks that sign-in does not open a second Settings tab.
 - The Firefox build ran headless in Firefox 151 against `smoke/server.mjs`, after the rename: it loads without errors, signs in through `launchWebAuthFlow`, and the field button and popup list work. This used a throwaway script, not in the repo: Puppeteer 23's Firefox launch, the extension installed with the raw BiDi command `browser.connection.send("webExtension.install", …)`, a fixed UUID from the `extensions.webextensions.uuids` pref, and host permissions granted by `extensions.originControls.grantByDefault`. `page.goto` to `moz-extension://` pages times out although the page loads, so catch it. Firefox Nightly here is 132, below `strict_min_version`.
 - GitHub Actions passes on a push to `main`: tests on Node 22, the build, `web-ext lint` and the package upload.
+- `v1.0.0` was tagged on 2026-11-23 and the release job attached both packages to a GitHub release. Their contents match a local build. The repository is private, so the release is too. Nothing has been uploaded to a store.
 - `web-ext lint` (version 10) on `dist/firefox`: no errors, two warnings. One is a false positive (`innerHTML` set from constant strings in `content.js`). The other says Firefox for Android 140 predates `data_collection_permissions` (142); it does not apply, because the add-on is not offered on Android.
 - The store screenshots in `store/screenshots/` were regenerated after the Settings rework; the Settings and dark popup ones were looked at.
 - Before the rename, the owner used the extension in Firefox against a real Stalwart server (mail.triplebit.net) through most of its development, and deleting from the popup was checked in Safari on a simulator against a test account.
 
 Not verified:
 - The optional `browsingActivity` permission in a real Firefox: the prompt when Site name is chosen (asked from a radio's change event), Settings showing Random after it is withdrawn in the add-on manager, blank popup suggestions without it, and Settings opening after sign-in. Only the unit test covers it. The owner saw Settings flicker back to Random for a moment after granting; the fix (no redraw from the permission event while the choice is being saved) has not been confirmed in Firefox.
-- The workflow's release job, which only runs for a `v*` tag.
 - The renamed build against a real Stalwart server, in either browser.
 - Firefox's real permission prompt, and the popup opened from the toolbar and not as a page.
 - Chromium sign-in against a real Stalwart server, and closing the Chromium sign-in window without finishing.
@@ -73,7 +73,7 @@ Not verified:
 
 Nothing is in progress. Known follow-ups, none of them requested yet:
 
-- Store submission has not been started. [PUBLISHING.md](PUBLISHING.md) has the steps; the publisher is Triplebit Corporation. larvatus.net is live, and the listing text is drafted in `store/listing.md`. Uploading to addons.mozilla.org and the Chrome Web Store from the workflow would need API keys as repository secrets.
+- Store submission has not been started. Upload the packages from the `v1.0.0` GitHub release. Before that: larvatus.net still serves the old privacy policy wording (checked 2026-11-23), and the reviewer notes point at this repository, which is private. [PUBLISHING.md](PUBLISHING.md) has the steps; the publisher is Triplebit Corporation. larvatus.net is live, and the listing text is drafted in `store/listing.md`. Uploading to addons.mozilla.org and the Chrome Web Store from the workflow would need API keys as repository secrets.
 - The Safari fork was synced at `fb513d5` and its own `settings.html` and `options.js` brought in line. In Safari the app owns the default prefix (now Random there too), so Safari's `options.js` lays the app's choice over the stored settings in `loadSettings()`; the shared `popup.js` and `settings.js` rely on `loadSettings()` for the prefix, so keep reading it that way. Signed-in checks of the synced Safari extension are still open (see the apps' DEVELOPMENT.md).
 - The owner still has to choose a support email and site for the listings and give reviewers a test server and account (placeholders in `store/listing.md`).
 - The repository has no LICENSE file; addons.mozilla.org asks for a licence.
