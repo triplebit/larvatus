@@ -1,4 +1,4 @@
-# Store listing text for Larvatus 1.0.0
+# Store listing text for Larvatus 1.0.1
 
 Text to paste into addons.mozilla.org (AMO) and the Chrome Web Store (CWS). Each block under a heading is meant to be pasted as it stands. Publisher on both stores: Triplebit Corporation.
 

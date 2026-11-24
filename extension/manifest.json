@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Larvatus",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Create, find and switch Stalwart masked addresses on or off.",
   "homepage_url": "https://larvatus.net/",
   "browser_specific_settings": {
