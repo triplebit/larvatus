@@ -4,7 +4,7 @@ The publisher on both stores is **Triplebit Corporation**. Store forms change of
 
 ## Before the first submission
 
-1. **Privacy policy page.** Both stores need a public URL: <https://larvatus.net/privacy/> (its source is `site/privacy/index.html` in the apps' repository; check it is live). It should say what the extension handles and where it goes:
+1. **Privacy policy page.** Both stores need a public URL: <https://larvat.us/privacy/> (its source is `privacy/index.html` in the website repository; check it is live). It should say what the extension handles and where it goes:
    - the address of your Stalwart server, and OAuth tokens for it, kept in the browser's local extension storage;
    - your masked addresses and their descriptions, read from and written to that server only;
    - the address of the current tab, used to suggest a description and, if chosen, the site's name as prefix; when the email field button creates an address, the site's origin is stored with it on your server as its Associated Domain. In Firefox this is optional (the browsing activity data permission) and off until the person chooses Site name as the default prefix;

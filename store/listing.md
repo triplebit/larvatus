@@ -54,8 +54,8 @@ Permissions:
 Privacy:
 Larvatus talks only to the Stalwart server you sign in to. It has no servers of its own, no analytics, and no tracking, and it sends nothing to Triplebit or anyone else. Your sign-in tokens and settings stay in your browser. Your address list is fetched from your server and kept only while the popup is open. Search runs in your browser. When you create an address, its description is stored on your server, and an address made with the email field button also stores the site's address (for example https://github.com) as its associated domain. In browsers that let you choose, the site's address is used and sent only once you allow it. The button looks at a page's form fields in your browser to decide where to appear; it does not read or send page contents.
 
-Privacy policy: https://larvatus.net/privacy/
-Website: https://larvatus.net/
+Privacy policy: https://larvat.us/privacy/
+Website: https://larvat.us/
 
 Larvatus is published free of charge by Triplebit Corporation, a nonprofit. It is not affiliated with or endorsed by Stalwart Labs.
 ```
@@ -159,7 +159,7 @@ Leave unticked: web history, health, financial and payment, personal communicati
 
 Certify all three statements: data is not sold or transferred to third parties outside the approved use cases; not used or transferred for purposes unrelated to the single purpose; not used or transferred to determine creditworthiness or for lending.
 
-Privacy policy URL: `https://larvatus.net/privacy/`
+Privacy policy URL: `https://larvat.us/privacy/`
 
 ## 6. Open questions for the owner
 
@@ -167,6 +167,6 @@ Privacy policy URL: `https://larvatus.net/privacy/`
 2. **Decided: no CWS "Web history" tick.** Chromium behavior is unchanged (it always suggests from the site), and section 5 leaves Web history unticked.
 3. **Done: privacy policy wording.** The policy now says that a kept suggested description is stored on the server and that Firefox makes site data a choice. It is live (checked 2026-11-24).
 4. **Decided: license.** GNU Affero General Public License, version 3 (`LICENSE` in the repository). On the AMO listing choose the AGPL 3.0 entry.
-5. **Support contact** for both listings: info@triplebit.org (the privacy contact) or another address, and a support site (larvatus.net or the GitHub repository).
+5. **Support contact** for both listings: info@triplebit.org (the privacy contact) or another address, and a support site (`https://larvat.us/support/` or the GitHub repository).
 6. **Test server for reviewers**: the placeholders in section 4. The repository URL there is the git remote (`triplebit/maskedemail-extension`); it needs to be public for reviewers to use it, and may be renamed later.
 7. **Name**: "Larvatus" matches the manifest. Settings calls it "Larvatus (for Stalwart Mail)"; a listing name such as "Larvatus for Stalwart" would be easier to find in store search, but AMO takes the name from the manifest, so it would mean a manifest change.
