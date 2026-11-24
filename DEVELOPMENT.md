@@ -1,19 +1,19 @@
 # Development notes
 
-MaskedEmail is a Firefox and Chromium extension for Stalwart masked addresses, published by Triplebit. The README covers what it does, how to load it and how releases work. This file is the handoff for whoever works on it next, person or agent. It holds what the code and README do not: how to work here, why things are the way they are, and what is still unverified. Keep it current when any of that changes. It is not named AGENTS.md or CLAUDE.md because the owner's global git ignore excludes those names.
+Larvatus is a Firefox and Chromium extension for Stalwart masked addresses, published by Triplebit. The README covers what it does, how to load it and how releases work. This file is the handoff for whoever works on it next, person or agent. It holds what the code and README do not: how to work here, why things are the way they are, and what is still unverified. Keep it current when any of that changes. It is not named AGENTS.md or CLAUDE.md because the owner's global git ignore excludes those names.
 
 ## How to work here
 
 - Smallest complete change. The owner follows the "ponytail" principles (https://github.com/DietrichGebert/ponytail/blob/main/AGENTS.md): use what the codebase or platform already has, no speculative options or wrappers, one small test for new non-trivial logic, and end replies with what you skipped or did not check.
 - The extension has no dependencies and no build step for Firefox. Keep it that way. Only `smoke/` has a `package.json`.
-- Commit only when asked. `masked-email.xpi` at the root is tracked, so run `node scripts/build.mjs` before a commit that touches `extension/`.
+- Commit only when asked. `larvatus.xpi` at the root is tracked, so run `node scripts/build.mjs` before a commit that touches `extension/`.
 - User-facing text says "your browser", never "Firefox" or "Chrome". The owner removed success messages from the on-page button and the autofill switch; do not add confirmations for things the UI already shows.
 
 ## Commands
 
 ```sh
 node --test test/         # unit tests, no install needed (Node 22.7+)
-node scripts/build.mjs    # dist/firefox, dist/chrome, both zips, and masked-email.xpi
+node scripts/build.mjs    # dist/firefox, dist/chrome, both zips, and larvatus.xpi
 npm --prefix smoke install && node smoke/chrome.mjs   # end-to-end test of the Chrome build
 ```
 
@@ -33,7 +33,7 @@ The smoke test builds the extension, starts a fake Stalwart (`smoke/server.mjs`,
 
 - **Gecko ID is still `alias-ledger@extensions.local`** (the extension's first name). Changing it makes Firefox treat it as a new extension and drops the stored sign-in. Decide the final ID before the first addons.mozilla.org upload.
 - **Sign-in runs in the background script.** The browser closes the popup for the permission prompt and the sign-in window, which would kill a flow running there. `signin-pending` is stored first so `permissions.onAdded` can resume it.
-- **Chromium sign-in does not use `launchWebAuthFlow`.** Stalwart only accepts loopback redirects for public clients (it answers 400 otherwise), and Chrome's helper only completes on `https://<id>.chromiumapp.org/`. So Chromium opens a popup window and a `tabs.onUpdated` listener catches `http://127.0.0.1/maskedemail-oauth/<id>`. The pending sign-in lives in `storage.session` because the service worker can stop while the person types a password. An earlier version used a declarativeNetRequest rule and a callback page; it was replaced as needlessly large. Firefox still uses `launchWebAuthFlow` with its own loopback form.
+- **Chromium sign-in does not use `launchWebAuthFlow`.** Stalwart only accepts loopback redirects for public clients (it answers 400 otherwise), and Chrome's helper only completes on `https://<id>.chromiumapp.org/`. So Chromium opens a popup window and a `tabs.onUpdated` listener catches `http://127.0.0.1/larvatus-oauth/<id>`. The pending sign-in lives in `storage.session` because the service worker can stop while the person types a password. An earlier version used a declarativeNetRequest rule and a callback page; it was replaced as needlessly large. Firefox still uses `launchWebAuthFlow` with its own loopback form.
 - **Firefox sign-in stays in a popup window.** Moving it to a tab was considered and the owner said no.
 - **The field button is off by default.** On by default would need all-sites access at install, which the owner rejected. The popup links to Settings while it is off.
 - **Filling uses `execCommand("insertText")`, then the native setter plus `input` and `change` events.** Setting `.value` alone (what SimpleLogin does) leaves React-style pages with an empty state, and they wipe the field on the next focus or blur.

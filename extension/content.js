@@ -1,9 +1,9 @@
-// Adds a MaskedEmail button to sign-up email fields. Registered by background.js only while the
+// Adds a Larvatus button to sign-up email fields. Registered by background.js only while the
 // option is on; it still checks the setting so that pages already open stop showing it when turned off.
 (() => {
-  if (globalThis.maskedEmailFieldsLoaded) return;
-  globalThis.maskedEmailFieldsLoaded = true;
-  const { isEmailField, isSignInForm } = globalThis.MaskedEmailFields;
+  if (globalThis.larvatusFieldsLoaded) return;
+  globalThis.larvatusFieldsLoaded = true;
+  const { isEmailField, isSignInForm } = globalThis.LarvatusFields;
 
   let enabled = false;
   let outside = false;
@@ -100,7 +100,7 @@
       const response = await browser.runtime.sendMessage({ action: "field-create" });
       if (!response || response.error) {
         const note = response?.type === "overQuota" ? " This quota can be configured by a Stalwart administrator in the admin dashboard." : "";
-        throw new Error((response?.error || "MaskedEmail could not create an address.") + note);
+        throw new Error((response?.error || "Larvatus could not create an address.") + note);
       }
       fill(input, response.value.email);
     } catch (error) {
@@ -111,9 +111,9 @@
   }
 
   function track(input) {
-    const host = document.createElement("maskedemail-button");
+    const host = document.createElement("larvatus-button");
     const root = host.attachShadow({ mode: "closed" });
-    root.innerHTML = `<style>${STYLE}</style><button type="button" title="Create a masked address with MaskedEmail" aria-label="Create a masked address with MaskedEmail">${ICON}</button><div class="tip" hidden></div>`;
+    root.innerHTML = `<style>${STYLE}</style><button type="button" title="Create a masked address with Larvatus" aria-label="Create a masked address with Larvatus">${ICON}</button><div class="tip" hidden></div>`;
     const entry = { host, button: root.querySelector("button"), tip: root.querySelector(".tip") };
     // Keep focus in the field when the button is pressed.
     entry.button.addEventListener("mousedown", event => event.preventDefault());
@@ -195,7 +195,7 @@
   }
 
   // The buttons' own placement and insertion are not page changes, and would otherwise re-scan the page each time.
-  const ours = node => node.localName === "maskedemail-button";
+  const ours = node => node.localName === "larvatus-button";
   const foreign = record => record.type === "attributes" ? !ours(record.target) : ![...record.addedNodes, ...record.removedNodes].every(ours);
   const mutations = new MutationObserver(records => records.some(foreign) && scan());
 

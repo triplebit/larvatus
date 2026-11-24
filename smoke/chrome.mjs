@@ -15,7 +15,7 @@ import { origin, start, username } from "./server.mjs";
 const root = fileURLToPath(new URL("..", import.meta.url));
 execFileSync("node", ["scripts/build.mjs"], { cwd: root, stdio: "ignore" });
 
-const tmp = mkdtempSync(join(tmpdir(), "maskedemail-smoke-"));
+const tmp = mkdtempSync(join(tmpdir(), "larvatus-smoke-"));
 const ext = join(tmp, "ext");
 cpSync(join(root, "dist/chrome"), ext, { recursive: true });
 // A headless browser cannot answer permission prompts, so the test copy gets its optional hosts up front.
@@ -73,9 +73,9 @@ try {
   // The sign-up form gets a button; the sign-in form on the same page does not.
   const site = await browser.newPage();
   await site.goto(origin + "/signup");
-  await until("the button on the sign-up form", () => site.$$eval("maskedemail-button", hosts => hosts.length === 1));
+  await until("the button on the sign-up form", () => site.$$eval("larvatus-button", hosts => hosts.length === 1));
   await sleep(500);
-  const [spot] = await site.$$eval("maskedemail-button", hosts => hosts.map(host => {
+  const [spot] = await site.$$eval("larvatus-button", hosts => hosts.map(host => {
     const rect = host.getBoundingClientRect();
     return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
   }));

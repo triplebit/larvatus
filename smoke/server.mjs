@@ -27,7 +27,7 @@ const PAGE = `<!doctype html><meta charset="utf-8"><title>Sign up</title>
 </script>`;
 
 export function start() {
-  const dir = mkdtempSync(join(tmpdir(), "maskedemail-cert-"));
+  const dir = mkdtempSync(join(tmpdir(), "larvatus-cert-"));
   execFileSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", join(dir, "key.pem"), "-out", join(dir, "cert.pem"),
     "-days", "2", "-subj", "/CN=localhost", "-addext", "subjectAltName=DNS:localhost"], { stdio: "ignore" });
   const aliases = [];

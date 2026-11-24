@@ -34,5 +34,5 @@ globalThis.browser ??= globalThis.chrome;
     return form.passwords === 1 && form.otherFields === 0;
   }
 
-  globalThis.MaskedEmailFields = { isEmailField, isSignInForm };
+  globalThis.LarvatusFields = { isEmailField, isSignInForm };
 })();

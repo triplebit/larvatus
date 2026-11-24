@@ -3,7 +3,7 @@ import { DEFAULTS, loadSettings } from "./options.js";
 import { hostPattern, isChromium, serverOrigin } from "./stalwart.js";
 
 // Theme: a localStorage copy applies the last choice before the first paint, then storage confirms it.
-const THEME_CACHE = "maskedemail-theme";
+const THEME_CACHE = "larvatus-theme";
 export function applyTheme(theme) {
   document.documentElement.dataset.theme = theme;
   try { localStorage.setItem(THEME_CACHE, theme); } catch {}

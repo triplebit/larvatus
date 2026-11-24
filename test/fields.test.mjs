@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import "../extension/fields.js";
 
-const { isEmailField, isSignInForm } = globalThis.MaskedEmailFields;
+const { isEmailField, isSignInForm } = globalThis.LarvatusFields;
 const form = fields => ({ passwords: 0, newPassword: false, currentPassword: false, otherFields: 0, submitText: "", context: "/", ...fields });
 
 test("recognizes email fields and skips other inputs", () => {

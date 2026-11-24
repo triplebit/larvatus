@@ -33,11 +33,11 @@ for (const [browser, targetManifest] of Object.entries(targets)) {
   const dir = join(dist, browser);
   await cp(source, dir, { recursive: true, filter: path => basename(path) !== ".DS_Store" });
   await writeFile(join(dir, "manifest.json"), JSON.stringify(targetManifest, null, 2) + "\n");
-  const archive = join(dist, `masked-email-${version}-${browser}.zip`);
+  const archive = join(dist, `larvatus-${version}-${browser}.zip`);
   // -X leaves out extra file attributes so repeated builds of the same files match.
   execFileSync("zip", ["-qrX", archive, "."], { cwd: dir });
   console.log(`${browser}: ${archive}`);
 }
 
 // The repository keeps a ready-to-load Firefox package at the root for manual installs.
-await copyFile(join(dist, `masked-email-${version}-firefox.zip`), join(root, "masked-email.xpi"));
+await copyFile(join(dist, `larvatus-${version}-firefox.zip`), join(root, "larvatus.xpi"));

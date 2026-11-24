@@ -145,5 +145,5 @@ test("links an alias to its Stalwart admin page by JMAP id", () => {
 
 test("uses each browser's own sign-in redirect", () => {
   assert.equal(redirectUri("https://abc123.extensions.allizom.org/"), "http://127.0.0.1/mozoauth2/abc123");
-  assert.equal(redirectUri("https://abcdefghijklmnop.chromiumapp.org/"), "http://127.0.0.1/maskedemail-oauth/abcdefghijklmnop");
+  assert.equal(redirectUri("https://abcdefghijklmnop.chromiumapp.org/"), "http://127.0.0.1/larvatus-oauth/abcdefghijklmnop");
 });

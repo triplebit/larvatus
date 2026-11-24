@@ -1,5 +1,5 @@
 {
-  "name": "maskedemail-smoke",
+  "name": "larvatus-smoke",
   "private": true,
   "type": "module",
   "description": "Browser smoke test for the built extension. The extension itself has no dependencies.",

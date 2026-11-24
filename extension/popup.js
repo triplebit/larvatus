@@ -158,7 +158,7 @@ byId("connect-form").onsubmit = event => {
   try { signingIn = beginSignIn(byId("server").value); }
   catch (error) { notice(error.message, true); return; }
   byId("connect").disabled = true;
-  notice("Continue in the Stalwart sign-in window. You can reopen MaskedEmail when you’re done.");
+  notice("Continue in the Stalwart sign-in window. You can reopen Larvatus when you’re done.");
   signingIn.then(start, error => notice(error.message, true)).finally(() => { byId("connect").disabled = false; });
 };
 byId("search").oninput = render;

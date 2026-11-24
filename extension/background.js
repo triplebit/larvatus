@@ -24,14 +24,14 @@ async function handle(message) {
     await store.remove("signinError");
     return { active: !!signing, origin: fresh(pendingSignin)?.origin, error: signinError };
   }
-  if (!connection || message.key !== connection.key) throw new Error("Your account changed. Reopen MaskedEmail.");
+  if (!connection || message.key !== connection.key) throw new Error("Your account changed. Reopen Larvatus.");
   if (message.action === "disconnect") {
     await store.remove("connection");
     try {
       await revoke(connection);
       return "Disconnected.";
     } catch {
-      return "Disconnected from this browser. To revoke server access, remove MaskedEmail from your Stalwart connected applications.";
+      return "Disconnected from this browser. To revoke server access, remove Larvatus from your Stalwart connected applications.";
     }
   }
 
@@ -78,18 +78,18 @@ async function authorized(connection, run) {
 // The email field button: an address described by and associated with the tab's site, with the prefix chosen in Settings.
 async function createForField(sender) {
   const settings = await loadSettings();
-  if (!settings.fieldButton) throw new Error("The MaskedEmail button is turned off in Settings.");
+  if (!settings.fieldButton) throw new Error("The Larvatus button is turned off in Settings.");
   const url = sender.tab?.url || sender.url;
   const defaults = siteDefaults(url);
-  if (!defaults) throw new Error("MaskedEmail can only create addresses on websites.");
+  if (!defaults) throw new Error("Larvatus can only create addresses on websites.");
   const prefix = fieldPrefix(settings, defaults);
   const { connection } = await store.get("connection");
-  if (!connection) throw new Error("Sign in to MaskedEmail first. Open it from the browser toolbar.");
+  if (!connection) throw new Error("Sign in to Larvatus first. Open it from the browser toolbar.");
   return authorized(connection, async connection => {
     const created = await createAlias(connection, prefix, defaults.description, new URL(url).origin);
     // Stalwart may leave the generated address out of the create response.
     const email = created.email || (await getAlias(connection, created.id))?.email;
-    if (!email) throw new Error("Stalwart created the address but did not return it. Open MaskedEmail to copy it.");
+    if (!email) throw new Error("Stalwart created the address but did not return it. Open Larvatus to copy it.");
     return { email };
   });
 }
@@ -99,7 +99,7 @@ function fieldPrefix(settings, defaults) {
   if (settings.fieldPrefix === "random") return "";
   if (settings.fieldPrefix !== "custom") return defaults.prefix;
   const custom = settings.fieldCustomPrefix.trim();
-  if (!PREFIX_PATTERN.test(custom)) throw new Error("Enter a custom prefix in MaskedEmail Settings, or choose another prefix option.");
+  if (!PREFIX_PATTERN.test(custom)) throw new Error("Enter a custom prefix in Larvatus Settings, or choose another prefix option.");
   return custom;
 }
 
@@ -122,7 +122,7 @@ function syncFieldScript({ reregister = false } = {}) {
     for (const tab of await browser.tabs.query({ url: FIELD_ORIGINS })) {
       browser.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, files: FIELD_SCRIPT.js }).catch(() => {});
     }
-  }).catch(error => console.error("MaskedEmail could not update the email field button.", error));
+  }).catch(error => console.error("Larvatus could not update the email field button.", error));
   return syncing;
 }
 browser.runtime.onInstalled.addListener(() => syncFieldScript({ reregister: true }));
@@ -181,7 +181,7 @@ let handledCallback = null;
 if (CHROMIUM) {
   browser.tabs.onUpdated.addListener(async (tabId, { url }) => {
     // The tab URL is visible because sign-in asks for access to http://127.0.0.1/*.
-    if (!url?.startsWith("http://127.0.0.1/maskedemail-oauth/") || url === handledCallback) return;
+    if (!url?.startsWith("http://127.0.0.1/larvatus-oauth/") || url === handledCallback) return;
     handledCallback = url;
     const { oauthPending: pending } = await browser.storage.session.get("oauthPending");
     if (!pending || !url.startsWith(pending.redirect)) return;
