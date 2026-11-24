@@ -81,7 +81,7 @@ export const callout = (point, side, text, { dark = false, shift = 0 } = {}) =>
 export const address = (local, on, style = "") =>
   `<div class="chip address${on ? "" : " off"}" style="${style}">${local}@example.org<i class="toggle"></i></div>`;
 
-// Sites -> masked addresses -> your server -> your inbox, drawn in the brand style. Rows are 110px apart around y 560.
+// Sites -> masked addresses -> your server -> your inbox, drawn in the brand style. Rows are 112px apart around y 560.
 export function diagram() {
   const sites = [["W", "Wrenfield Books", "wrenfield.k7m2qa", true, "#2f6b5a"], ["H", "Harbor Cycles", "harbor.p3w8zt", false, "#3d5a80"],
     ["P", "Pinecrest News", "pinecrest.c6v1xe", true, "#8a5a2b"]];
