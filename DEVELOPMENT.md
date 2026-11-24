@@ -15,6 +15,7 @@ Larvatus is a Firefox and Chromium extension for Stalwart masked addresses, publ
 node --test test/         # unit tests, no install needed (Node 22.7+)
 node scripts/build.mjs    # dist/firefox, dist/chrome, both zips, and larvatus.xpi
 npm --prefix smoke install && node smoke/chrome.mjs   # end-to-end test of the Chrome build
+node smoke/screenshots.mjs  # store screenshots (1280x800) into store/screenshots/, same browser setup
 ```
 
 The smoke test builds the extension, starts a fake Stalwart (`smoke/server.mjs`, https://localhost:8443, needs `openssl`), signs in, turns on the field button, fills a sign-up form and checks the popup. It needs a Chromium that honours `--load-extension`: Puppeteer's own Chrome for Testing, or `CHROME_PATH=` pointing at Chromium or Brave. Branded Google Chrome 137+ ignores that flag. It listens on a local port, so sandboxes that block port binding must allow it. `PUPPETEER_SKIP_DOWNLOAD=1` skips the Chrome download when you set `CHROME_PATH`.
@@ -52,7 +53,7 @@ Verified:
 
 Not verified:
 - GitHub Actions has never passed. Both runs so far failed at setup because actions were not SHA-pinned; that is fixed in the workflow but not yet pushed, so the build, `web-ext lint` and release steps have never run.
-- The Firefox build has not been checked by an agent since the Chromium changes (commit a8244de: `sendResponse` replies, the split of `authorize()`). Automating Firefox failed twice: Puppeteer 24.1 has no `installExtension`, and a pre-installed XPI in a Nightly profile would not navigate to `moz-extension://` pages. `web-ext run` was not tried.
+- The Firefox build was checked headless in Firefox 151 on 2026-11-23 against `smoke/server.mjs` with a throwaway script (not in the repo): Puppeteer 23's Firefox launch, the extension installed with the raw BiDi command `browser.connection.send("webExtension.install", …)`, a fixed UUID from the `extensions.webextensions.uuids` pref, and the test manifest's host permissions granted by `extensions.originControls.grantByDefault`. Sign-in through `launchWebAuthFlow`, the field button and the popup list all worked. `page.goto` to `moz-extension://` pages times out although the page loads, so catch it. Firefox Nightly here is 132, below `strict_min_version`.
 - Chromium sign-in against a real Stalwart server, and closing the Chromium sign-in window without finishing.
 - The field button on real websites, and whether the alias edit link's ID matches on the real server.
 - `scripts/cloud-setup.sh` in a real cloud environment.

@@ -42,7 +42,8 @@
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { margin: 0; }
+/* Chromium styles extension pages' body as 75% system-ui, which would override the root font. */
+body { margin: 0; font: inherit; }
 button, input, select { font: inherit; }
 button { cursor: pointer; border: 1px solid var(--line); color: inherit; background: var(--subtle); padding: 7px 11px; border-radius: 7px; }
 button:hover { background: var(--hover); }

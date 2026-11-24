@@ -10,6 +10,7 @@ The publisher on both stores is **Triplebit Corporation**. Store forms change of
    - the address of the current tab, used to suggest a prefix and description; when the email field button creates an address, the site's origin is stored with it on your server as its Associated Domain;
    - nothing is sent to Triplebit or any third party, and there is no analytics.
 2. **Screenshots** of the popup (list, create, delete confirmation) and of the button on a sign-up email field. Chrome needs at least one at 1280×800 or 640×400.
+   `node smoke/screenshots.mjs` (see DEVELOPMENT.md) writes these to `store/screenshots/` at 1280×800 from the fake server.
 3. **Listing text.** A short summary (the manifest description works) and a longer description. The README's first paragraph and Settings section are a starting point.
 4. **Test the packages in real browsers.** Load `dist/firefox` and `dist/chrome` as in the README, sign in to a Stalwart server, create an address from the popup and from the field button, toggle one and delete one.
 5. **Set the version** in `extension/manifest.json`. Each store accepts a version number once.
