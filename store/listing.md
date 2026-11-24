@@ -66,16 +66,16 @@ Categories:
 - AMO: Privacy & Security (primary). If a second is wanted: Social & Communication.
 - CWS: Privacy & Security (under "Make Chrome Yours"). Alternative: Productivity > Communication.
 
-Screenshot captions (the files are 1280x800, from the fake test server):
+Screenshot captions. The files are 1280x800 posters: a headline, the real interface captured from the fake test server, and callouts. The Chrome Web Store takes five at most, so upload 1 to 5 there; addons.mozilla.org can take all six.
 
-| File | Caption |
-|---|---|
-| `1-popup.png` | Your masked addresses, newest first, with search and a form for new ones |
-| `1-popup-dark.png` | The popup in dark mode |
-| `2-create.png` | Creating an address with a prefix and description |
-| `3-field-button.png` | The optional button on a sign-up email field fills in a new masked address |
-| `4-settings.png` | Settings: your account and default prefix, and the email field button |
-| `5-delete.png` | Deleting an address asks you to confirm first |
+| File | Headline in the image | Caption |
+|---|---|---|
+| `1-addresses.png` | A separate address for every site. | Your masked addresses in the toolbar popup: click one to copy it, or switch it off |
+| `2-field-button.png` | Sign up without giving out your address. | The optional button on a sign-up email field creates a masked address and fills it in |
+| `3-create.png` | Name it, or leave it random. | Creating an address with a prefix and description |
+| `4-switch-off.png` | Too much mail? Switch it off. | Your server rejects mail to an address that is switched off |
+| `5-your-server.png` | Your real address stays private. | Each site gets its own address; mail goes through your own Stalwart server to your inbox |
+| `6-dark.png` | Light or dark. | The popup in light and dark mode |
 
 ## 4. AMO: Notes for reviewers
 
@@ -166,7 +166,7 @@ Privacy policy URL: `https://larvatus.net/privacy/`
 1. **Decided: AMO `data_collection_permissions`.** `browsingActivity` is optional on Firefox (`"optional": ["browsingActivity"]` beside the required `authenticationInfo` and `personallyIdentifyingInfo`). Larvatus asks for it at run time from Settings and sends no site address without it. `websiteContent` and `websiteActivity` are not needed: the content script reads form structure on the device and sends nothing from the page.
 2. **Decided: no CWS "Web history" tick.** Chromium behaviour is unchanged (it always suggests from the site), and section 5 leaves Web history unticked.
 3. **Privacy policy wording**: it says the site's address is used "on your device" to suggest a description and is stored on the server only "when you create an address from a sign-up form". The popup's suggested description ("Created on <hostname>") is also stored on the server when kept. A short addition to the policy would cover it.
-4. **Licence**: the repository has no LICENSE file. AMO asks for one on the listing.
+4. **Decided: licence.** GNU Affero General Public License, version 3 (`LICENSE` in the repository). On the AMO listing choose the AGPL 3.0 entry.
 5. **Support contact** for both listings: info@triplebit.org (the privacy contact) or another address, and a support site (larvatus.net or the GitHub repository).
 6. **Test server for reviewers**: the placeholders in section 4. The repository URL there is the git remote (`triplebit/maskedemail-extension`); it needs to be public for reviewers to use it, and may be renamed later.
 7. **Name**: "Larvatus" matches the manifest. Settings calls it "Larvatus (for Stalwart Mail)"; a listing name such as "Larvatus for Stalwart" would be easier to find in store search, but AMO takes the name from the manifest, so it would mean a manifest change.
