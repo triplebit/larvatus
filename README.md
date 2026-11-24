@@ -66,4 +66,4 @@ The script writes `dist/firefox` and `dist/chrome` plus `dist/larvatus-<version>
 
 ## Releases
 
-`.github/workflows/build.yml` runs the tests, builds both packages, and lints the Firefox package with Mozilla's `web-ext lint` on every push and pull request. The packages are attached to each run as an artifact. To publish a release, set the version in `extension/manifest.json`, then push a matching tag such as `v1.0.1`. The workflow attaches both zips to a GitHub release, ready to upload to addons.mozilla.org and the Chrome Web Store.
+`.github/workflows/build.yml` runs the tests, builds both packages, and lints the Firefox package with Mozilla's `web-ext lint` on every push and pull request. The packages are attached to each run as an artifact. To publish a release, set the version in `extension/manifest.json`, then push a matching tag such as `v1.0.1`. The workflow attaches both zips to a GitHub release, ready to upload to addons.mozilla.org and the Chrome Web Store. [PUBLISHING.md](PUBLISHING.md) has the submission steps.
