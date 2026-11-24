@@ -77,6 +77,10 @@ export function shot(capture, { x, y, scale = 1, pad = 0, style = "", className 
 export const callout = (point, side, text, { dark = false, shift = 0 } = {}) =>
   `<div class="callout ${side}${dark ? " dark" : ""}" style="left: ${point.x}px; top: ${point.y}px; --shift: ${shift}px"><span>${text}</span></div>`;
 
+// A masked address as a chip with its switch, as drawn in the diagram and on the marquee tile.
+export const address = (local, on, style = "") =>
+  `<div class="chip address${on ? "" : " off"}" style="${style}">${local}@example.org<i class="toggle"></i></div>`;
+
 // Sites -> masked addresses -> your server -> your inbox, drawn in the brand style. Rows are 110px apart around y 560.
 export function diagram() {
   const sites = [["W", "Wrenfield Books", "wrenfield.k7m2qa", true, "#2f6b5a"], ["H", "Harbor Cycles", "harbor.p3w8zt", false, "#3d5a80"],
@@ -94,7 +98,7 @@ export function diagram() {
       ${lines}<path d="M988 ${mid}H1040" style="${flow}" marker-end="url(#head)"/></svg>
     ${sites.map(([initial, name, local, on, color], i) => `
       <div class="chip site" style="left: 80px; top: ${ys[i] - 30}px"><b style="background: ${color}">${initial}</b>${name}</div>
-      <div class="chip address${on ? "" : " off"}" style="left: 352px; top: ${ys[i] - 30}px">${local}@example.org<i class="toggle"></i></div>`).join("")}
+      ${address(local, on, `left: 352px; top: ${ys[i] - 30}px`)}`).join("")}
     <div class="node" style="left: 784px; top: ${mid - 88}px; width: 204px">
       <svg viewBox="0 0 48 48" width="52" height="52"><rect x="8" y="8" width="32" height="13" rx="4"/><rect x="8" y="27" width="32" height="13" rx="4"/><circle cx="15" cy="14.5" r="2"/><circle cx="15" cy="33.5" r="2"/><path d="M22 14.5h12M22 33.5h12"/></svg>
       <strong>Your Stalwart server</strong></div>

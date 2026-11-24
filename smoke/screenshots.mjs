@@ -1,5 +1,6 @@
 // Store screenshots of the Chrome build against the fake Stalwart in server.mjs: 1280x800 posters in
-// store/screenshots/, composed in poster.mjs around live 2x captures of the extension. Same browser requirements as chrome.mjs:
+// store/screenshots/, composed in poster.mjs around live 2x captures of the extension, and the Chrome Web Store's
+// two promo tiles in store/promo/. Same browser requirements as chrome.mjs:
 //   CHROME_PATH=... PUPPETEER_SKIP_DOWNLOAD=1 node smoke/screenshots.mjs
 import { execFileSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -7,13 +8,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import puppeteer from "puppeteer";
-import { callout, copy, diagram, DIAGRAM_CSS, lockup, mask, poster, shot } from "./poster.mjs";
+import { address, callout, copy, diagram, DIAGRAM_CSS, lockup, mask, poster, shot } from "./poster.mjs";
 import { origin, start } from "./server.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const out = join(root, "store/screenshots");
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
+mkdirSync(join(root, "store/promo"), { recursive: true });
 execFileSync("node", ["scripts/build.mjs"], { cwd: root, stdio: "ignore" });
 
 const tmp = mkdtempSync(join(tmpdir(), "larvatus-shots-"));
@@ -163,7 +165,8 @@ try {
   // Compose each poster and screenshot it at 1280x800.
   const canvas = await browser.newPage();
   await canvas.setViewport({ width: 1280, height: 800, deviceScaleFactor: 1 });
-  async function render(name, html) {
+  async function render(name, html, width = 1280, height = 800) {
+    await canvas.setViewport({ width, height, deviceScaleFactor: 1 });
     await canvas.setContent(html, { waitUntil: "load" });
     await canvas.evaluate(() => document.fonts.ready);
     await canvas.screenshot({ path: join(out, name) });
@@ -238,6 +241,23 @@ try {
       ${copy("left: 80px; top: 220px; width: 390px", "Light or *dark.*", "Follows your browser’s theme, or choose one in Settings.")}
       ${back.html}${front.html}`));
   }
+
+  // The Chrome Web Store's promo tiles: brand art with little text and no screenshot, as the store asks.
+  const size = (width, height) => `body { width: ${width}px; height: ${height}px; }`;
+  await render("../promo/small-440x280.png", poster(`
+    ${mask("left: 196px; top: 52px; width: 390px; transform: rotate(-12deg); color: rgb(255 255 255 / .1)")}
+    <div class="brand" style="inset: 0">${lockup("")}<p>Masked email addresses for Stalwart</p></div>`,
+    size(440, 280) + `.brand { display: grid; place-content: center; justify-items: center; gap: 16px; font-size: 17px; font-weight: 500; color: rgb(255 255 255 / .92); }
+     .lockup { gap: 14px; font-size: 46px; letter-spacing: -1.6px; } .lockup svg { width: 62px; height: 62px; }`, "red"), 440, 280);
+  await render("../promo/marquee-1400x560.png", poster(`
+    ${mask("left: 700px; top: 40px; width: 780px; transform: rotate(-9deg); color: rgb(255 255 255 / .06)")}
+    ${lockup("left: 96px; top: 76px")}
+    ${copy("left: 96px; top: 176px; width: 560px", "A separate address for *every site.*", "Masked email addresses on your own Stalwart mail server.")}
+    <div style="left: 800px; top: 140px"><div class="stack">
+      ${address("wrenfield.k7m2qa", true)}${address("harbor.p3w8zt", false, "margin-left: 62px")}${address("pinecrest.c6v1xe", true, "margin-left: 22px")}</div></div>`,
+    size(1400, 560) + DIAGRAM_CSS + `h1 { font-size: 64px; } h1 em { white-space: nowrap; } .lockup { font-size: 28px; gap: 13px; } .lockup svg { width: 44px; height: 44px; }
+     .stack { display: grid; gap: 18px; zoom: 1.3; } .chip { border: 0; box-shadow: 0 18px 44px rgb(80 0 20 / .35); }
+     .address.off { background: #f3ded9; box-shadow: 0 10px 26px rgb(80 0 20 / .2); }`, "red"), 1400, 560);
   console.log("Screenshots in " + out);
 } finally {
   await browser.close();

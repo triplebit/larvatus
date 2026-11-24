@@ -41,7 +41,7 @@ The add-on id `extension@larvatus.net` is fixed from the first upload. Changing 
 
 1. Register at <https://chrome.google.com/webstore/devconsole> with the Google account Triplebit Corporation will publish from. There is a one-time registration fee, and the publisher name is set in the account. Then choose **New item**.
 2. Upload `larvatus-<version>-chrome.zip`.
-3. **Store listing**: description, category, language, the 128 px icon (`extension/icons/icon-128.png`), and the screenshots.
+3. **Store listing**: description, category, language, the 128 px icon (`extension/icons/icon-128.png`), the screenshots (five at most), and the promo tiles from `store/promo/`: `small-440x280.png` as the small promo tile and `marquee-1400x560.png` as the marquee.
 4. **Privacy**:
    - Single purpose: creating and managing Stalwart masked addresses.
    - Permission justifications:

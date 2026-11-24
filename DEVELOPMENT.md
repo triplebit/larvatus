@@ -16,7 +16,7 @@ Larvatus is a Firefox and Chromium extension for Stalwart masked addresses, publ
 node --test test/*.test.mjs   # unit tests, no install needed. Name the files: Node 22 runs a bare directory as a module
 node scripts/build.mjs    # dist/firefox, dist/chrome, both zips, and larvatus.xpi
 npm --prefix smoke install && node smoke/chrome.mjs   # end-to-end test of the Chrome build
-node smoke/screenshots.mjs  # store screenshots (1280x800 posters) into store/screenshots/, same browser setup
+node smoke/screenshots.mjs  # store screenshots (1280x800 posters) into store/screenshots/ and Chrome's promo tiles into store/promo/, same browser setup
 ```
 
 The smoke test builds the extension, starts a fake Stalwart (`smoke/server.mjs`, https://localhost:8443, needs `openssl`), signs in, turns on the field button, fills a sign-up form and checks the popup. It needs a Chromium that honours `--load-extension`: Puppeteer's own Chrome for Testing, or `CHROME_PATH=` pointing at Chromium or Brave. Branded Google Chrome 137+ ignores that flag. It listens on a local port, so sandboxes that block port binding must allow it. `PUPPETEER_SKIP_DOWNLOAD=1` skips the Chrome download when you set `CHROME_PATH`.
@@ -62,7 +62,7 @@ Verified:
 - `v1.0.0` and then `v1.0.1` were tagged on 2026-11-23, and the release job attached both packages to a GitHub release each time. 1.0.1 is the one for the stores: it is 1.0.0 with the field button built without `innerHTML`. Their contents match a local build. The repository is private, so the release is too. The owner began uploading 1.0.1 to both stores on 2026-11-23; whether either was submitted, and its review state, is not recorded here, so ask.
 - `web-ext lint` (version 10) on `dist/firefox`: no errors, one warning. It says Firefox for Android 140 predates `data_collection_permissions` (142) and does not apply, because the add-on is not offered on Android.
 - The field button built without `innerHTML` (see Decisions) was checked in headless Brave with a stubbed extension API: it renders in the email field and a click fills the address. The full smoke test was not re-run after that change.
-- The store screenshots in `store/screenshots/` are six posters: a headline, callouts and the real interface captured at 2x, laid out by `smoke/poster.mjs`, plus one drawn diagram. All six were looked at after the last run. The script empties the folder first, and `smoke/server.mjs` has a fixed port, so a second copy of the fake server (another session's smoke test) makes it fail with `EADDRINUSE`.
+- The store screenshots in `store/screenshots/` are six posters: a headline, callouts and the real interface captured at 2x, laid out by `smoke/poster.mjs`, plus one drawn diagram. All six were looked at after the last run. The same script writes the Chrome Web Store's promo tiles to `store/promo/` (440x280 and 1400x560: brand art, no screenshot); both were looked at. Posters 1, 4 and 6 show creation dates counted back from today, so a rerun on a later day changes those files. The script empties the screenshots folder first, and `smoke/server.mjs` has a fixed port, so a second copy of the fake server (another session's smoke test) makes it fail with `EADDRINUSE`.
 - Before the rename, the owner used the extension in Firefox against a real Stalwart server (mail.triplebit.net) through most of its development, and deleting from the popup was checked in Safari on a simulator against a test account.
 
 Not verified:

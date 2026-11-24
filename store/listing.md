@@ -66,7 +66,7 @@ Categories:
 - AMO: Privacy & Security (primary). If a second is wanted: Social & Communication.
 - CWS: Privacy & Security (under "Make Chrome Yours"). Alternative: Productivity > Communication.
 
-Screenshot captions. The files are 1280x800 posters: a headline, the real interface captured from the fake test server, and callouts. The Chrome Web Store takes five at most, so upload 1 to 5 there; addons.mozilla.org can take all six.
+Screenshot captions. The files are 1280x800 posters: a headline, the real interface captured from the fake test server, and callouts. The Chrome Web Store takes five at most, so upload 1 to 5 there; addons.mozilla.org can take all six. The Chrome Web Store's promo tiles are in `store/promo/`: `small-440x280.png` (small promo tile) and `marquee-1400x560.png` (marquee promo tile). They carry no caption.
 
 | File | Headline in the image | Caption |
 |---|---|---|
