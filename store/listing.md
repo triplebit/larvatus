@@ -1,0 +1,172 @@
+# Store listing text for Larvatus 1.0.0
+
+Text to paste into addons.mozilla.org (AMO) and the Chrome Web Store (CWS). Each block under a heading is meant to be pasted as it stands. Publisher on both stores: Triplebit Corporation.
+
+## 1. Name and summary
+
+Name:
+
+```
+Larvatus
+```
+
+Summary (AMO "Summary", limit 250 characters) and short description (CWS, taken from the manifest `description`, limit 132 characters). The manifest description is 61 characters, so it fits both and is reused as is:
+
+```
+Create, find and switch Stalwart masked addresses on or off.
+```
+
+## 2. Long description
+
+The same text for both stores. Plain text, no markup.
+
+```
+Larvatus creates and manages masked addresses on your own Stalwart mail server. A masked address is a separate address that delivers to your inbox, so you can give each site its own address and switch it off when you no longer want its mail.
+
+In the toolbar popup you can:
+- See your masked addresses, newest first, with their descriptions and creation dates.
+- Search by address or description.
+- Create an address with an optional prefix and description. On a website, both can be suggested from the site, for example "github" and "Created on github.com", and you can edit or clear them. In some browsers suggestions are off until you turn on "Suggest a prefix and description from the current site" in Settings. Leave the prefix blank for one random letter or digit. Your server generates the rest of the address.
+- Click an address to copy it.
+- Switch an address off, which makes your server reject mail sent to it, and on again to restore delivery.
+- Delete an address after confirming. Mail sent to it is no longer delivered.
+- Open an address on your server's account page to edit it there.
+
+Optional button on email fields:
+Turn on "Show Larvatus button on email fields" in Settings to add a button to email fields on sign-up forms. Clicking it creates a masked address for the site and fills it in. The button skips forms that look like sign-in forms. In Settings you choose the prefix it uses (the site's name, one random character, or your own), and whether the button sits inside or beside the field so it does not cover password manager buttons. The button is off until you turn it on. Without permission to use the site's address, it creates the address with a random prefix and no description.
+
+Requirements:
+- Stalwart 1.0.3 or later, reachable over HTTPS, with its built-in OAuth server and public client registration enabled.
+- A Stalwart account that is allowed to manage masked addresses. Your server's administrator sets how many you can have.
+
+Signing in:
+Enter your server's address and choose "Sign in with Stalwart". You sign in on your server's own page, so Larvatus never sees your password. It registers itself with your server and signs in with OAuth (authorization code with PKCE), asking only for access to your account settings, which is where Stalwart keeps masked addresses. "Disconnect account" in Settings removes the sign-in from your browser and asks your server to revoke it.
+
+Permissions:
+- Access to your mail server: asked when you sign in, for the server you enter and no other.
+- Access to websites: asked only when you turn on the email field button. It lets Larvatus add the button to email fields. If you never turn the button on, Larvatus never asks for it.
+- Use of the site's address (some browsers): asked when you turn on suggestions or the email field button in Settings. Without it, Larvatus sends nothing about the sites you visit to your server. You can turn it off again in Settings or in your browser's add-on settings.
+- In some browsers, sign-in also asks for access to 127.0.0.1, the local address your server sends you back to after you sign in.
+- Current tab: when you open the popup, Larvatus reads the current tab's address to suggest a prefix and description, if suggestions are on.
+- Storage: keeps your server address, sign-in tokens and settings in your browser.
+- Identity and scripting: used for the sign-in redirect and to add the email field button.
+
+Privacy:
+Larvatus talks only to the Stalwart server you sign in to. It has no servers of its own, no analytics and no tracking, and sends nothing to Triplebit or anyone else. Your sign-in tokens and settings stay in your browser. Your address list is fetched from your server and kept only while the popup is open, and search runs in your browser. When you create an address, its description is stored on your server, and an address made with the email field button also stores the site's address (for example https://github.com) as its associated domain. In browsers that let you choose, the site's address is only used and sent once you allow it in Settings. The button looks at a page's form fields in your browser to decide where to appear; it does not read or send page contents.
+
+Privacy policy: https://larvatus.net/privacy/
+Website: https://larvatus.net/
+
+Larvatus is published free of charge by Triplebit Corporation, a nonprofit. It is not affiliated with or endorsed by Stalwart Labs.
+```
+
+## 3. Categories and screenshot captions
+
+Categories:
+- AMO: Privacy & Security (primary). If a second is wanted: Social & Communication.
+- CWS: Privacy & Security (under "Make Chrome Yours"). Alternative: Productivity > Communication.
+
+Screenshot captions (the files are 1280x800, from the fake test server):
+
+| File | Caption |
+|---|---|
+| `1-popup.png` | Your masked addresses, newest first, with search and a form for new ones |
+| `1-popup-dark.png` | The popup in dark mode |
+| `2-create.png` | On a website, the prefix and description are suggested from the site |
+| `3-field-button.png` | The optional button on a sign-up email field fills in a new masked address |
+| `4-settings.png` | Settings: your account, the email field button and its options |
+| `5-delete.png` | Deleting an address asks you to confirm first |
+
+## 4. AMO: Notes for reviewers
+
+```
+Larvatus manages masked addresses on a Stalwart mail server (https://stalw.art/), so testing needs a Stalwart 1.0.3 or later server with its OAuth server and public client registration enabled. Larvatus has no servers of its own and talks only to the Stalwart server the person enters.
+
+Test server and account:
+  Server address: [OWNER: TEST SERVER, e.g. mail.example.org]
+  Username:       [OWNER: TEST ACCOUNT]
+  Password:       [OWNER: TEST PASSWORD]
+  [OWNER: say whether the account has a masked-address limit, and that it may be reset after review]
+
+Sign-in flow:
+1. Open Larvatus from the toolbar, enter the server address and click "Sign in with Stalwart". When sign-in completes, the extension opens its Settings page (runtime.openOptionsPage).
+2. Firefox asks for access to that one server (an optional host permission from "https://*/*"). The popup may close for this prompt; sign-in continues in the background script (permissions.onAdded), so reopen the popup afterwards if needed.
+3. The background script reads the server's OAuth discovery document, registers a public client (dynamic client registration, token_endpoint_auth_method "none"), and calls identity.launchWebAuthFlow with Firefox's loopback redirect (http://127.0.0.1/mozoauth2/<id>). It uses the authorization code flow with PKCE S256 and the scope urn:stalwart:oauth:scope:settings, which Stalwart uses for masked addresses.
+4. Sign in and approve access on the Stalwart page. Tokens are stored in storage.local. Settings > "Disconnect account" deletes them and calls the server's revocation endpoint.
+
+Then: create an address from the popup, copy it, switch it off and on, delete it, and search.
+
+Why host permissions are optional:
+- The mail server is chosen by the person, so it cannot be listed in the manifest. Access is requested at sign-in for that server's origin only.
+- The email field button is off by default. Turning it on in Settings ("Show Larvatus button on email fields") requests "https://*/*"; only then does the background script register content.js and fields.js with scripting.registerContentScripts. Turning it off, or removing the permission, unregisters them. To test it, turn it on and open any sign-up form with an email field; clicking the button creates an address whose description is "Created on <hostname>" and whose forDomain is the page origin, both sent to the person's own Stalwart server.
+- activeTab is used only to read the current tab's URL when the popup opens, to suggest a prefix and description, and only while browsingActivity is granted.
+
+Data collection: authenticationInfo (OAuth tokens, sent only to the person's own server) and personallyIdentifyingInfo (their account name and masked addresses) are required. browsingActivity is optional: the current site's hostname (in the suggested description) and origin (as forDomain, from the field button) are sent to the person's own Stalwart server only while it is granted. It is requested with permissions.request from a click in Settings: by the switch "Suggest a prefix and description from the current site", and together with "https://*/*" in one prompt when the email field button is turned on. Without it, the popup does not read the active tab and the field button sends a random one-character prefix with no description and no forDomain (enforced in background.js, createForField). The switch follows permissions.onAdded/onRemoved, so revoking it in about:addons is reflected.
+
+Source: the package is the unmodified contents of the extension/ folder of https://github.com/triplebit/maskedemail-extension. Nothing is bundled, minified or generated, and there are no dependencies. web-ext lint reports one warning about innerHTML in content.js; it is set from constant strings (the button's icon and style), never from page or server data.
+```
+
+## 5. CWS: Privacy practices tab
+
+Single purpose:
+
+```
+Larvatus creates and manages masked email addresses on the user's own Stalwart mail server: listing, searching, creating, copying, switching on or off and deleting them, from the toolbar popup or from an optional button on sign-up email fields.
+```
+
+Permission justifications. The Chrome manifest that `scripts/build.mjs` writes declares `permissions` `activeTab`, `identity`, `scripting`, `storage` and `optional_host_permissions` `https://*/*`, `http://127.0.0.1/*`. This matches the list in PUBLISHING.md.
+
+`storage`:
+```
+Keeps the user's server address, OAuth tokens for that server and the extension's settings on the device (local storage), and a pending sign-in in session storage while the user signs in.
+```
+
+`identity`:
+```
+Used only for identity.getRedirectURL(), whose extension id becomes part of the loopback redirect address the extension registers with the user's Stalwart server at sign-in.
+```
+
+`activeTab`:
+```
+When the user opens the popup, the extension reads the active tab's URL to suggest a prefix and description for a new address, such as "github" and "Created on github.com". The user can edit or clear both.
+```
+
+`scripting`:
+```
+Registers the content script that adds the Larvatus button to email fields on sign-up forms, and injects it into tabs already open. This happens only after the user turns the button on in Settings and grants website access; turning it off unregisters the script.
+```
+
+Host permission `https://*/*` (optional):
+```
+Requested in two cases, both started by the user. At sign-in, for the origin of the Stalwart server the user enters, so the extension can call its OAuth and JMAP endpoints; the server is chosen by the user and cannot be listed in advance. When the user turns on the email field button in Settings, for all HTTPS sites, so the button can be added to email fields. The button is off by default and the extension works without it.
+```
+
+Host permission `http://127.0.0.1/*` (optional):
+```
+Requested at sign-in. Stalwart only accepts loopback redirect addresses for public OAuth clients, and Chrome's launchWebAuthFlow only completes on chromiumapp.org, so the extension opens the sign-in in a window and reads that tab's URL when it reaches http://127.0.0.1/larvatus-oauth/<id> to collect the authorization code. Nothing is served from or sent to 127.0.0.1.
+```
+
+Remote code:
+
+```
+No, I am not using remote code. All JavaScript is in the package. The extension only exchanges JSON data with the user's own Stalwart server.
+```
+
+Data usage. Tick:
+- Personally identifiable information: the user's account name and their masked email addresses, read from and written to the user's own Stalwart server.
+- Authentication information: OAuth tokens for that server, stored on the device and sent only to that server.
+Leave unticked: web history, health, financial and payment, personal communications, location, user activity, website content. The content script inspects form fields on the device only and sends nothing from the page.
+
+Certify all three statements: data is not sold or transferred to third parties outside the approved use cases; not used or transferred for purposes unrelated to the single purpose; not used or transferred to determine creditworthiness or for lending.
+
+Privacy policy URL: `https://larvatus.net/privacy/`
+
+## 6. Open questions for the owner
+
+1. **Decided: AMO `data_collection_permissions`.** `browsingActivity` is optional on Firefox (`"optional": ["browsingActivity"]` beside the required `authenticationInfo` and `personallyIdentifyingInfo`). Larvatus asks for it at run time from Settings and sends no site address without it. `websiteContent` and `websiteActivity` are not needed: the content script reads form structure on the device and sends nothing from the page.
+2. **Decided: no CWS "Web history" tick.** Chromium behaviour is unchanged (it always suggests from the site), and section 5 leaves Web history unticked.
+3. **Privacy policy wording**: it says the site's address is used "on your device" to suggest a description and is stored on the server only "when you create an address from a sign-up form". The popup's suggested description ("Created on <hostname>") is also stored on the server when kept. A short addition to the policy would cover it.
+4. **Licence**: the repository has no LICENSE file. AMO asks for one on the listing.
+5. **Support contact** for both listings: info@triplebit.org (the privacy contact) or another address, and a support site (larvatus.net or the GitHub repository).
+6. **Test server for reviewers**: the placeholders in section 4. The repository URL there is the git remote (`triplebit/maskedemail-extension`); it needs to be public for reviewers to use it, and may be renamed later.
+7. **Name**: "Larvatus" matches the manifest. Settings calls it "Larvatus (for Stalwart Mail)"; a listing name such as "Larvatus for Stalwart" would be easier to find in store search, but AMO takes the name from the manifest, so it would mean a manifest change.
