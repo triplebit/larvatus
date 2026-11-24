@@ -9,7 +9,17 @@
   let outside = false;
   const tracked = new Map(); // input -> { host, button, tip }
 
-  const ICON = `<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#dd2b55"/><path d="M9 21l23 12 23-12v19c0 6-4 10-10 10-5 0-10-4-13-8-3 4-8 8-13 8-6 0-10-4-10-10z" fill="#fffefa"/><path d="m16 32 10 5-10 1zm32 0-10 5 10 1z" fill="#dd2b55"/></svg>`;
+  // The button is built node by node, not from markup: Mozilla's validator flags any innerHTML assignment.
+  const svg = (tag, attributes, ...children) => {
+    const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, value);
+    node.append(...children);
+    return node;
+  };
+  const icon = () => svg("svg", { viewBox: "0 0 64 64", "aria-hidden": "true" },
+    svg("rect", { width: 64, height: 64, rx: 15, fill: "#dd2b55" }),
+    svg("path", { d: "M9 21l23 12 23-12v19c0 6-4 10-10 10-5 0-10-4-13-8-3 4-8 8-13 8-6 0-10-4-10-10z", fill: "#fffefa" }),
+    svg("path", { d: "m16 32 10 5-10 1zm32 0-10 5 10 1z", fill: "#dd2b55" }));
   const STYLE = `
     :host { all: initial; position: absolute; z-index: 2147483647; display: block; }
     button { all: unset; box-sizing: border-box; display: block; width: 100%; height: 100%; cursor: pointer; border-radius: 22%;
@@ -113,8 +123,18 @@
   function track(input) {
     const host = document.createElement("larvatus-button");
     const root = host.attachShadow({ mode: "closed" });
-    root.innerHTML = `<style>${STYLE}</style><button type="button" title="Create a masked address with Larvatus" aria-label="Create a masked address with Larvatus">${ICON}</button><div class="tip" hidden></div>`;
-    const entry = { host, button: root.querySelector("button"), tip: root.querySelector(".tip") };
+    const style = document.createElement("style");
+    style.textContent = STYLE;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.title = "Create a masked address with Larvatus";
+    button.setAttribute("aria-label", button.title);
+    button.append(icon());
+    const tip = document.createElement("div");
+    tip.className = "tip";
+    tip.hidden = true;
+    root.append(style, button, tip);
+    const entry = { host, button, tip };
     // Keep focus in the field when the button is pressed.
     entry.button.addEventListener("mousedown", event => event.preventDefault());
     entry.button.addEventListener("click", event => {
