@@ -135,7 +135,8 @@ li { border-top: 1px solid var(--line); padding: 10px 4px 9px 1px; }
 .option .switch { grid-row: span 2; margin-top: 2px; }
 .option strong { font-weight: 600; }
 .option p { margin: 0; font-size: 13px; }
-.option.dimmed strong, .option.dimmed p { opacity: .6; }
+.option.dimmed strong, .option.dimmed p, .option.dimmed .choices { opacity: .6; }
+.switch:disabled { cursor: default; }
 .option.plain { grid-template-columns: 1fr; }
 .option-notice { margin: 6px 0 0 !important; font-size: 12px; }
 .option-notice:empty { display: none; }

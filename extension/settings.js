@@ -72,9 +72,14 @@ async function showOptions() {
   setSwitch("field-button", fieldButton);
   setSwitch("button-outside", settings.buttonOutside);
   byId("outside-option").classList.toggle("dimmed", !fieldButton);
+  byId("button-outside").disabled = !fieldButton;
   byId("prefix-option").classList.toggle("dimmed", !fieldButton);
-  for (const radio of document.getElementsByName("field-prefix")) radio.checked = radio.value === settings.fieldPrefix;
+  for (const radio of document.getElementsByName("field-prefix")) {
+    radio.checked = radio.value === settings.fieldPrefix;
+    radio.disabled = !fieldButton;
+  }
   byId("custom-prefix").hidden = settings.fieldPrefix !== "custom";
+  byId("custom-prefix").disabled = !fieldButton;
   if (document.activeElement !== byId("custom-prefix")) byId("custom-prefix").value = settings.fieldCustomPrefix;
   checkCustomPrefix();
   for (const radio of document.getElementsByName("theme")) radio.checked = radio.value === settings.theme;
