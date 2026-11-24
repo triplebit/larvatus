@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import puppeteer from "puppeteer";
 import { address, callout, copy, diagram, DIAGRAM_CSS, lockup, mask, poster, shot } from "./poster.mjs";
-import { origin, start } from "./server.mjs";
+import { origin, SIGNUP, start } from "./server.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const out = join(root, "store/screenshots");
@@ -48,26 +48,8 @@ const seed = [
 ].map(([local, description, age, enable], i) => ({ id: "seed" + i, email: local + "@example.org", description, enable,
   createdAt: new Date(Date.now() - age * day).toISOString() }));
 
-// A generic sign-up page for a fictional shop, served in place of the network.
+// The sign-up page for a fictional shop, served in place of the network.
 const SITE = "https://wrenfield.example/join";
-const SIGNUP = `<!doctype html><meta charset="utf-8"><title>Join Wrenfield Books</title>
-<style>
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center; font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1f2a2e; background: #eef2f0; }
-  .card { width: 420px; padding: 36px 40px 40px; background: #fff; border-radius: 14px; box-shadow: 0 10px 40px rgb(30 50 45 / .12); }
-  .brand { font: 600 15px Georgia, serif; letter-spacing: .4px; color: #2f6b5a; }
-  h1 { margin: 10px 0 4px; font-size: 26px; letter-spacing: -.4px; }
-  p { margin: 0 0 24px; color: #5d6b6f; }
-  form { display: grid; gap: 6px; }
-  label { margin-top: 10px; font-size: 13px; font-weight: 600; }
-  input { padding: 11px 12px; font: inherit; border: 1px solid #cdd6d3; border-radius: 8px; }
-  button { margin-top: 22px; padding: 12px; font: inherit; font-weight: 600; color: #fff; background: #2f6b5a; border: 0; border-radius: 8px; }
-</style>
-<div class="card"><div class="brand">Wrenfield Books</div><h1>Create your account</h1><p>Track orders and get early access to signed editions.</p>
-<form><label for="name">Full name</label><input id="name" name="name" autocomplete="name" value="Sam Rivera">
-<label for="email">Email</label><input id="email" type="email" name="email" autocomplete="email">
-<label for="password">Password</label><input id="password" type="password" autocomplete="new-password" value="correct-horse">
-<button>Create account</button></form></div>
-<script>document.forms[0].addEventListener("submit", event => event.preventDefault());</script>`;
 
 
 // A 2x capture of the clip (CSS pixels) with the rects of the named elements relative to it.

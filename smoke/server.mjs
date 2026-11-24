@@ -26,10 +26,35 @@ const PAGE = `<!doctype html><meta charset="utf-8"><title>Sign up</title>
   for (const form of document.forms) form.addEventListener("submit", event => event.preventDefault());
 </script>`;
 
+// A generic sign-up page for a fictional shop, for store screenshots: screenshots.mjs serves it in place of
+// the network, and the apps' screenshots open it at https://wrenfield.localhost:8443/join (any .localhost name
+// is this machine, and the certificate covers that one). The viewport and the narrower card are for phones, where
+// the card also sits at the top with the email field first, high enough that Safari does not scroll it under the status bar when the keyboard opens; maximum-scale keeps iOS Safari from zooming in
+// on the 15px fields when one is focused.
+export const SIGNUP = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>Join Wrenfield Books</title>
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1f2a2e; background: #eef2f0; }
+  .card { width: min(420px, 100vw - 112px); padding: 36px 40px 40px; background: #fff; border-radius: 14px; box-shadow: 0 10px 40px rgb(30 50 45 / .12); }
+  .brand { font: 600 15px Georgia, serif; letter-spacing: .4px; color: #2f6b5a; }
+  h1 { margin: 10px 0 4px; font-size: 26px; letter-spacing: -.4px; }
+  p { margin: 0 0 24px; color: #5d6b6f; }
+  form { display: grid; gap: 6px; }
+  label { margin-top: 10px; font-size: 13px; font-weight: 600; }
+  input { padding: 11px 12px; font: inherit; border: 1px solid #cdd6d3; border-radius: 8px; }
+  button { margin-top: 22px; padding: 12px; font: inherit; font-weight: 600; color: #fff; background: #2f6b5a; border: 0; border-radius: 8px; }
+  @media (max-width: 600px) { body { place-items: start center; } .card { margin-top: 24px; } p { display: none; } form { margin-top: 14px; } [for=email], #email { order: -1; } }
+</style>
+<div class="card"><div class="brand">Wrenfield Books</div><h1>Create your account</h1><p>Track orders and get early access to signed editions.</p>
+<form><label for="name">Full name</label><input id="name" name="name" autocomplete="name" value="Sam Rivera">
+<label for="email">Email</label><input id="email" type="email" name="email" autocomplete="email">
+<label for="password">Password</label><input id="password" type="password" autocomplete="new-password" value="correct-horse">
+<button>Create account</button></form></div>
+<script>document.forms[0].addEventListener("submit", event => event.preventDefault());</script>`;
+
 export function start() {
   const dir = mkdtempSync(join(tmpdir(), "larvatus-cert-"));
   execFileSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", join(dir, "key.pem"), "-out", join(dir, "cert.pem"),
-    "-days", "2", "-subj", "/CN=localhost", "-addext", "subjectAltName=DNS:localhost"], { stdio: "ignore" });
+    "-days", "2", "-subj", "/CN=localhost", "-addext", "subjectAltName=DNS:localhost,DNS:wrenfield.localhost"], { stdio: "ignore" });
   const aliases = [];
 
   const server = https.createServer({ key: readFileSync(join(dir, "key.pem")), cert: readFileSync(join(dir, "cert.pem")) }, async (req, res) => {
@@ -44,7 +69,8 @@ export function start() {
           registration_endpoint: origin + "/register", authorization_response_iss_parameter_supported: true });
       case "POST /register":
         // Stalwart's real rule and wording: this is what refused Chrome's chromiumapp.org redirect.
-        if (!/^http:\/\/(127\.0\.0\.1|\[::1\])\//.test(JSON.parse(body).redirect_uris[0])) {
+        // The second form is the apps' redirect (net.larvatus:/oauth); their screenshots use this server too.
+        if (!/^(http:\/\/(127\.0\.0\.1|\[::1\])\/|[a-z][a-z0-9+-]*\.[a-z0-9.+-]*:\/)/.test(JSON.parse(body).redirect_uris[0])) {
           return json({ error: "invalid_redirect_uri", error_description: "Redirect URI must be a loopback (http://127.0.0.1/, http://[::1]/) or a private-use scheme containing a dot." }, 400);
         }
         return json({ client_id: "smoke-client" });
@@ -55,7 +81,10 @@ export function start() {
       }
       case "POST /token": {
         const form = new URLSearchParams(body);
-        if (form.get("code") !== "smoke-code" || !form.get("code_verifier")) return json({ error: "invalid_grant" }, 400);
+        // Refreshing too, so the apps' screenshots stay signed in past the hour.
+        const valid = form.get("grant_type") === "refresh_token" ? form.get("refresh_token") === "smoke-refresh"
+          : form.get("code") === "smoke-code" && form.get("code_verifier");
+        if (!valid) return json({ error: "invalid_grant" }, 400);
         return json({ token_type: "bearer", access_token: "smoke-token", refresh_token: "smoke-refresh", expires_in: 3600, scope: "urn:stalwart:oauth:scope:settings" });
       }
       case "GET /jmap/session":
@@ -77,6 +106,8 @@ export function start() {
       }
       case "GET /signup":
         return res.writeHead(200, { "Content-Type": "text/html" }).end(PAGE);
+      case "GET /join":
+        return res.writeHead(200, { "Content-Type": "text/html" }).end(SIGNUP);
       default:
         return json({ error: "not found" }, 404);
     }

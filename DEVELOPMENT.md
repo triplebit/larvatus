@@ -21,6 +21,8 @@ node smoke/screenshots.mjs  # store screenshots (1280x800 posters) into store/sc
 
 The smoke test builds the extension, starts a fake Stalwart (`smoke/server.mjs`, https://localhost:8443, needs `openssl`), signs in, turns on the field button, fills a sign-up form and checks the popup. It needs a Chromium that honours `--load-extension`: Puppeteer's own Chrome for Testing, or `CHROME_PATH=` pointing at Chromium or Brave. Branded Google Chrome 137+ ignores that flag. It listens on a local port, so sandboxes that block port binding must allow it. `PUPPETEER_SKIP_DOWNLOAD=1` skips the Chrome download when you set `CHROME_PATH`.
 
+The apps' repository uses `smoke/server.mjs` and `smoke/poster.mjs` for its App Store screenshots (`scripts/capture.mjs` and `scripts/posters.mjs` there). For that the fake server accepts the apps' `net.larvatus:/oauth` redirect and token refreshes, serves the Wrenfield sign-up page at `/join` (exported as `SIGNUP`, with a phone layout below 600px), and its certificate also names `wrenfield.localhost`. Keep those when changing it.
+
 `scripts/cloud-setup.sh` is the setup script for a Claude Code on the web environment. It has not been run in one yet.
 
 ## Layout
