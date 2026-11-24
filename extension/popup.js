@@ -1,7 +1,7 @@
 import "./compat.js";
 import { beginSignIn, byId, notice, send } from "./ui.js";
 import { FIELD_ORIGINS, loadSettings } from "./options.js";
-import { siteDefaults } from "./site.js";
+import { siteAllowed, siteDefaults } from "./site.js";
 import { aliasPage } from "./stalwart.js";
 
 let account;
@@ -196,6 +196,7 @@ byId("composer").onsubmit = event => {
 
 // Prefill from the active tab. defaultValue makes the form's reset() restore these after each create.
 async function prefill() {
+  if (!await siteAllowed()) return;
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
   const defaults = tab?.url && siteDefaults(tab.url);
   if (!defaults) return;

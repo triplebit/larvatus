@@ -42,6 +42,7 @@ The smoke test builds the extension, starts a fake Stalwart (`smoke/server.mjs`,
 - **The button is positioned in page coordinates**, not `position: fixed`, because script-driven fixed positioning lagged on iOS (commit 059f2c5). Which iOS browser the owner uses is not recorded here.
 - **A blank prefix sends one random character.** Stalwart's own generated prefix is long. The field button also sets `forDomain` to the page origin.
 - **The masked-address limit cannot be read.** It defaults to 5 and is set by the Stalwart admin, but the `urn:stalwart:oauth:scope:settings` token cannot read it (checked against Stalwart 1.0.3 source). The number only appears in the `overQuota` error text, which the popup shows in its top banner. The owner chose not to build a counter or progress bar on that.
+- **Site data is optional on Firefox.** `browsingActivity` is an optional data permission, asked for with website access when the field button is turned on (Firefox grants a combined prompt all or nothing) or by its own switch in Settings. Without it the popup suggests nothing from the tab and the field button sends a random prefix, no description and no `forDomain`. `siteAllowed()` in `site.js` is true wherever the manifest does not offer the choice, so Chromium and Safari are unchanged; the owner decided Chrome needs no "Web history" disclosure. Sign-in opens Settings when it succeeds, so a new user sees the switch.
 - **Alias edit links** are `<server>/account/Account/x:MaskedEmail/<JMAP id>`.
 - **Colors** come from the Stalwart dashboard in light and dark mode (tokens at the top of `style.css`). Dark-mode primary buttons use dark text because white on `#ff5b7e` has too little contrast.
 - **Workflow actions are pinned to commit SHAs.** The triplebit GitHub organisation refuses tags such as `@v4`.
@@ -51,27 +52,28 @@ The smoke test builds the extension, starts a fake Stalwart (`smoke/server.mjs`,
 The product was renamed from MaskedEmail to Larvatus on this date. Stalwart's own names (`x:MaskedEmail`, "masked address") and the storage keys were kept.
 
 Verified:
-- Unit tests pass. `smoke/chrome.mjs` passes in Brave on macOS, after the rename.
+- Unit tests pass. `smoke/chrome.mjs` passes in Brave on macOS, after the rename and after the optional site-data change (it also checks that sign-in does not open a second Settings tab).
 - The Firefox build ran headless in Firefox 151 against `smoke/server.mjs`, after the rename: it loads without errors, signs in through `launchWebAuthFlow`, and the field button and popup list work. This used a throwaway script, not in the repo: Puppeteer 23's Firefox launch, the extension installed with the raw BiDi command `browser.connection.send("webExtension.install", …)`, a fixed UUID from the `extensions.webextensions.uuids` pref, and host permissions granted by `extensions.originControls.grantByDefault`. `page.goto` to `moz-extension://` pages times out although the page loads, so catch it. Firefox Nightly here is 132, below `strict_min_version`.
 - `web-ext lint` on `dist/firefox`: no errors, one false-positive warning (`innerHTML` set from constant strings in `content.js`).
 - The store screenshots in `store/screenshots/` were generated and looked at.
 - Before the rename, the owner used the extension in Firefox against a real Stalwart server (mail.triplebit.net) through most of its development, and deleting from the popup was checked in Safari on a simulator against a test account.
 
 Not verified:
+- The optional `browsingActivity` permission in a real Firefox: the combined prompt, the Settings switch following the add-on manager, blank popup suggestions without it, and Settings opening after sign-in. Only the unit test covers it. Firefox for Android 140 and 141 lack the run-time API (142 has it); no `gecko_android` minimum is set.
 - GitHub Actions has never passed. Both runs so far failed at setup because actions were not SHA-pinned; that is fixed in the workflow, so the build, `web-ext lint` and release steps have yet to run there.
 - The renamed build against a real Stalwart server, in either browser.
 - Firefox's real permission prompt, and the popup opened from the toolbar and not as a page.
 - Chromium sign-in against a real Stalwart server, and closing the Chromium sign-in window without finishing.
 - The field button on real websites in Chromium, and whether the alias edit link's ID matches on the real server.
 - `scripts/cloud-setup.sh` in a real cloud environment.
-- larvatus.net is not deployed, so the manifest's `homepage_url` and the privacy policy URL are dead until it is.
 
 ## Open work
 
 Nothing is in progress. Known follow-ups, none of them requested yet:
 
-- Store submission has not been started. [PUBLISHING.md](PUBLISHING.md) has the steps; the publisher is Triplebit Corporation. It waits on larvatus.net being live. Uploading to addons.mozilla.org and the Chrome Web Store from the workflow would need API keys as repository secrets.
-- For addons.mozilla.org, `data_collection_permissions` may need a browsing-activity entry: the site's hostname is sent to the user's Stalwart server in the description and `forDomain`.
+- Store submission has not been started. [PUBLISHING.md](PUBLISHING.md) has the steps; the publisher is Triplebit Corporation. larvatus.net is live, and the listing text is drafted in `store/listing.md`. Uploading to addons.mozilla.org and the Chrome Web Store from the workflow would need API keys as repository secrets.
+- The Safari fork's `settings.html` needs the hidden `#site-option` block before the next sync, or the shared `settings.js` throws on the missing `#site-data`.
+- The repository has no LICENSE file; addons.mozilla.org asks for a licence.
 - The smoke test could run in the workflow once it has passed on Linux.
 - A kept Firefox smoke test (`smoke/firefox.mjs`) could be made from the approach described under Verified.
 - The popup's edit control is a pencil; the apps use the `switch.2` symbol for the same action.

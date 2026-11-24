@@ -1,5 +1,6 @@
 import "./compat.js";
 import { FIELD_ORIGINS, loadSettings, saveSettings } from "./options.js";
+import { SITE_DATA, siteAllowed, siteChoice } from "./site.js";
 import { PREFIX_PATTERN, PREFIX_RULE } from "./stalwart.js";
 import { applyTheme, beginSignIn, byId, notice, send } from "./ui.js";
 
@@ -77,15 +78,23 @@ async function showOptions() {
   if (document.activeElement !== byId("custom-prefix")) byId("custom-prefix").value = settings.fieldCustomPrefix;
   checkCustomPrefix();
   for (const radio of document.getElementsByName("theme")) radio.checked = radio.value === settings.theme;
+  // The permission itself is this setting. Browsers that offer no choice always use the site.
+  if (siteChoice()) {
+    byId("site-option").hidden = false;
+    setSwitch("site-data", await siteAllowed());
+  }
 }
 
 byId("field-button").addEventListener("click", () => {
   const turnOn = byId("field-button").getAttribute("aria-checked") !== "true";
   // Request in the click itself: Firefox only shows permission prompts for a user action.
-  const granted = turnOn ? browser.permissions.request({ origins: FIELD_ORIGINS }) : Promise.resolve(true);
+  // One prompt also asks to use the site, which Firefox grants with website access or not at all.
+  const request = { origins: FIELD_ORIGINS, ...siteChoice() && SITE_DATA };
+  const granted = turnOn ? browser.permissions.request(request) : Promise.resolve(true);
   (async () => {
     autofillNotice();
-    if (!await granted) {
+    // Website access is all the button needs, and may have been granted before.
+    if (!await granted && !await browser.permissions.contains({ origins: FIELD_ORIGINS })) {
       autofillNotice("The button needs access to websites to find their email fields.", true);
       return;
     }
@@ -93,6 +102,17 @@ byId("field-button").addEventListener("click", () => {
     await showOptions();
   })().catch(error => autofillNotice(error.message, true));
 });
+
+byId("site-data").addEventListener("click", () => {
+  const turnOn = byId("site-data").getAttribute("aria-checked") !== "true";
+  const changed = turnOn ? browser.permissions.request(SITE_DATA) : browser.permissions.remove(SITE_DATA);
+  autofillNotice();
+  changed.then(done => done || autofillNotice("Your browser needs permission to use the site’s address.", true),
+    error => autofillNotice(error.message, true));
+});
+// The switches follow the permissions, including changes made in the browser's add-on manager.
+browser.permissions.onAdded.addListener(() => showOptions().catch(error => autofillNotice(error.message, true)));
+browser.permissions.onRemoved.addListener(() => showOptions().catch(error => autofillNotice(error.message, true)));
 
 byId("button-outside").addEventListener("click", () => {
   saveSettings({ buttonOutside: byId("button-outside").getAttribute("aria-checked") !== "true" })

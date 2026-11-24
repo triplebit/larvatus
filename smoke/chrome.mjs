@@ -65,6 +65,9 @@ try {
   }, origin);
   await until("the account in Settings", () => settings.evaluate(() => document.getElementById("user").textContent).then(user => user === username));
   await until("the sign-in window to close", () => settings.evaluate(async () => (await chrome.windows.getAll()).length === 1));
+  // Sign-in opens Settings, which is already open here, so it is focused rather than opened twice.
+  await sleep(500);
+  assert.equal(await settings.evaluate(async url => (await chrome.tabs.query({ url })).length, base + "/settings.html"), 1);
 
   // Turn on the email field button with its real switch.
   await settings.click("#field-button");

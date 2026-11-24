@@ -1,6 +1,6 @@
 import "./compat.js";
 import { FIELD_ORIGINS, loadSettings } from "./options.js";
-import { siteDefaults } from "./site.js";
+import { siteAllowed, siteDefaults } from "./site.js";
 import { PREFIX_PATTERN, authorize, completeAuthorization, createAlias, deleteAlias, getAlias, hostPattern, isChromium, listAliases,
   prepareAuthorization, redirectUri, refresh, revoke, serverOrigin, session, setEnabled } from "./stalwart.js";
 
@@ -76,17 +76,19 @@ async function authorized(connection, run) {
 }
 
 // The email field button: an address described by and associated with the tab's site, with the prefix chosen in Settings.
+// Without permission to use the site, nothing about it is sent: a site-name prefix becomes a random one.
 async function createForField(sender) {
   const settings = await loadSettings();
   if (!settings.fieldButton) throw new Error("The Larvatus button is turned off in Settings.");
   const url = sender.tab?.url || sender.url;
   const defaults = siteDefaults(url);
   if (!defaults) throw new Error("Larvatus can only create addresses on websites.");
-  const prefix = fieldPrefix(settings, defaults);
+  const site = await siteAllowed();
+  const prefix = fieldPrefix(settings, site ? defaults : { prefix: "" });
   const { connection } = await store.get("connection");
   if (!connection) throw new Error("Sign in to Larvatus first. Open it from the browser toolbar.");
   return authorized(connection, async connection => {
-    const created = await createAlias(connection, prefix, defaults.description, new URL(url).origin);
+    const created = await createAlias(connection, prefix, site ? defaults.description : "", site ? new URL(url).origin : "");
     // Stalwart may leave the generated address out of the create response.
     const email = created.email || (await getAlias(connection, created.id))?.email;
     if (!email) throw new Error("Stalwart created the address but did not return it. Open Larvatus to copy it.");
@@ -159,6 +161,8 @@ function signIn(origin) {
 async function finishSignIn(connection) {
   await store.set({ connection });
   await store.remove(["pendingSignin", "signinError"]);
+  // Show a new account every option. If Settings started the sign-in, the browser focuses that tab.
+  browser.runtime.openOptionsPage().catch(() => {});
   return summary(connection);
 }
 
