@@ -31,7 +31,8 @@ const targets = {
 await rm(dist, { recursive: true, force: true });
 for (const [browser, targetManifest] of Object.entries(targets)) {
   const dir = join(dist, browser);
-  await cp(source, dir, { recursive: true, filter: path => basename(path) !== ".DS_Store" });
+  // Dot files are never part of the extension: .DS_Store, or a tool's folder such as .claude.
+  await cp(source, dir, { recursive: true, filter: path => !basename(path).startsWith(".") });
   await writeFile(join(dir, "manifest.json"), JSON.stringify(targetManifest, null, 2) + "\n");
   const archive = join(dist, `larvatus-${version}-${browser}.zip`);
   // -X leaves out extra file attributes so repeated builds of the same files match.
