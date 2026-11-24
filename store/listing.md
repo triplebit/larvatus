@@ -165,7 +165,7 @@ Privacy policy URL: `https://larvatus.net/privacy/`
 
 1. **Decided: AMO `data_collection_permissions`.** `browsingActivity` is optional on Firefox (`"optional": ["browsingActivity"]` beside the required `authenticationInfo` and `personallyIdentifyingInfo`). Larvatus asks for it at run time from Settings and sends no site address without it. `websiteContent` and `websiteActivity` are not needed: the content script reads form structure on the device and sends nothing from the page.
 2. **Decided: no CWS "Web history" tick.** Chromium behaviour is unchanged (it always suggests from the site), and section 5 leaves Web history unticked.
-3. **Privacy policy wording**: it says the site's address is used "on your device" to suggest a description and is stored on the server only "when you create an address from a sign-up form". The popup's suggested description ("Created on <hostname>") is also stored on the server when kept. A short addition to the policy would cover it.
+3. **Done: privacy policy wording.** The policy now says that a kept suggested description is stored on the server and that Firefox makes site data a choice. It is live (checked 2026-11-24).
 4. **Decided: licence.** GNU Affero General Public License, version 3 (`LICENSE` in the repository). On the AMO listing choose the AGPL 3.0 entry.
 5. **Support contact** for both listings: info@triplebit.org (the privacy contact) or another address, and a support site (larvatus.net or the GitHub repository).
 6. **Test server for reviewers**: the placeholders in section 4. The repository URL there is the git remote (`triplebit/maskedemail-extension`); it needs to be public for reviewers to use it, and may be renamed later.
