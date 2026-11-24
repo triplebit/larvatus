@@ -1,12 +1,13 @@
 # Development notes
 
-Larvatus is a Firefox and Chromium extension for Stalwart masked addresses, published by Triplebit. The README covers what it does, how to load it and how releases work. This file is the handoff for whoever works on it next, person or agent. It holds what the code and README do not: how to work here, why things are the way they are, and what is still unverified. Keep it current when any of that changes. It is not named AGENTS.md or CLAUDE.md because the owner's global git ignore excludes those names.
+Larvatus is a Firefox and Chromium extension for Stalwart masked addresses, published by Triplebit. The README covers what it does, how to load it and how releases work. This file is the handoff for whoever works on it next, person or agent. It holds what the code and README do not: how to work here, why things are the way they are, and what is still unverified. Keep it current when any of that changes. The owner's global git ignore excludes `CLAUDE.md` and `AGENTS.md`, so this file is the committed copy of the working notes. A local `CLAUDE.md` may exist that imports it.
 
 ## How to work here
 
+- **Work is generally done by Opus agents, orchestrated by the main session.** Planning, decisions and discussion with the owner happen in the main session. It briefs Opus subagents to do the coding, sets each one's reasoning effort to fit the task, reviews and tests what they return, and commits. Subagents do not commit. Small edits and doc updates are fine in the main session.
 - Smallest complete change. The owner follows the "ponytail" principles (https://github.com/DietrichGebert/ponytail/blob/main/AGENTS.md): use what the codebase or platform already has, no speculative options or wrappers, one small test for new non-trivial logic, and end replies with what you skipped or did not check.
 - The extension has no dependencies and no build step for Firefox. Keep it that way. Only `smoke/` has a `package.json`.
-- Commit only when asked. `larvatus.xpi` at the root is tracked, so run `node scripts/build.mjs` before a commit that touches `extension/`.
+- Commit only when asked. Commits are signed through the owner's 1Password SSH agent, which a sandboxed shell cannot reach, so the commit command runs outside the sandbox; do not turn signing off. Push only when asked. `larvatus.xpi` at the root is tracked, so run `node scripts/build.mjs` before a commit that touches `extension/`.
 - User-facing text says "your browser", never "Firefox" or "Chrome". The owner removed success messages from the on-page button and the autofill switch; do not add confirmations for things the UI already shows.
 
 ## Commands
@@ -47,22 +48,32 @@ The smoke test builds the extension, starts a fake Stalwart (`smoke/server.mjs`,
 
 ## State as of 2026-11-23
 
+The product was renamed from MaskedEmail to Larvatus on this date. Stalwart's own names (`x:MaskedEmail`, "masked address") and the storage keys were kept.
+
 Verified:
-- Unit tests pass. `smoke/chrome.mjs` passes in Brave on macOS.
-- The owner has used the extension in Firefox against a real Stalwart server (mail.triplebit.net) through most of its development.
+- Unit tests pass. `smoke/chrome.mjs` passes in Brave on macOS, after the rename.
+- The Firefox build ran headless in Firefox 151 against `smoke/server.mjs`, after the rename: it loads without errors, signs in through `launchWebAuthFlow`, and the field button and popup list work. This used a throwaway script, not in the repo: Puppeteer 23's Firefox launch, the extension installed with the raw BiDi command `browser.connection.send("webExtension.install", …)`, a fixed UUID from the `extensions.webextensions.uuids` pref, and host permissions granted by `extensions.originControls.grantByDefault`. `page.goto` to `moz-extension://` pages times out although the page loads, so catch it. Firefox Nightly here is 132, below `strict_min_version`.
+- `web-ext lint` on `dist/firefox`: no errors, one false-positive warning (`innerHTML` set from constant strings in `content.js`).
+- The store screenshots in `store/screenshots/` were generated and looked at.
+- Before the rename, the owner used the extension in Firefox against a real Stalwart server (mail.triplebit.net) through most of its development, and deleting from the popup was checked in Safari on a simulator against a test account.
 
 Not verified:
-- GitHub Actions has never passed. Both runs so far failed at setup because actions were not SHA-pinned; that is fixed in the workflow but not yet pushed, so the build, `web-ext lint` and release steps have never run.
-- The Firefox build was checked headless in Firefox 151 on 2026-11-23 against `smoke/server.mjs` with a throwaway script (not in the repo): Puppeteer 23's Firefox launch, the extension installed with the raw BiDi command `browser.connection.send("webExtension.install", …)`, a fixed UUID from the `extensions.webextensions.uuids` pref, and the test manifest's host permissions granted by `extensions.originControls.grantByDefault`. Sign-in through `launchWebAuthFlow`, the field button and the popup list all worked. `page.goto` to `moz-extension://` pages times out although the page loads, so catch it. Firefox Nightly here is 132, below `strict_min_version`.
+- GitHub Actions has never passed. Both runs so far failed at setup because actions were not SHA-pinned; that is fixed in the workflow, so the build, `web-ext lint` and release steps have yet to run there.
+- The renamed build against a real Stalwart server, in either browser.
+- Firefox's real permission prompt, and the popup opened from the toolbar and not as a page.
 - Chromium sign-in against a real Stalwart server, and closing the Chromium sign-in window without finishing.
-- The field button on real websites, and whether the alias edit link's ID matches on the real server.
+- The field button on real websites in Chromium, and whether the alias edit link's ID matches on the real server.
 - `scripts/cloud-setup.sh` in a real cloud environment.
+- larvatus.net is not deployed, so the manifest's `homepage_url` and the privacy policy URL are dead until it is.
 
 ## Open work
 
 Nothing is in progress. Known follow-ups, none of them requested yet:
 
-- Store submission is manual. Uploading to addons.mozilla.org and the Chrome Web Store from the workflow would need API keys as repository secrets.
+- Store submission has not been started. [PUBLISHING.md](PUBLISHING.md) has the steps; the publisher is Triplebit Corporation. It waits on larvatus.net being live. Uploading to addons.mozilla.org and the Chrome Web Store from the workflow would need API keys as repository secrets.
 - For addons.mozilla.org, `data_collection_permissions` may need a browsing-activity entry: the site's hostname is sent to the user's Stalwart server in the description and `forDomain`.
 - The smoke test could run in the workflow once it has passed on Linux.
+- A kept Firefox smoke test (`smoke/firefox.mjs`) could be made from the approach described under Verified.
+- The popup's edit control is a pencil; the apps use the `switch.2` symbol for the same action.
+- The Safari extension in the apps' repository forks six files. Three small changes here would cut that to two: read `FIELD_ORIGINS` and the field-button default from the manifest's optional hosts; hide the sign-in form, Disconnect and the prefix choice when `browser.identity` is missing; and a `pointer: coarse` popup width.
 - `showTip` in `content.js` still supports a success style that nothing uses.
