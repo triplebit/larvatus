@@ -18,7 +18,7 @@ The publisher on both stores is **Triplebit Corporation**. Store forms change of
 ## Build
 
 ```sh
-node --test test/
+node --test test/*.test.mjs
 node scripts/build.mjs
 ```
 

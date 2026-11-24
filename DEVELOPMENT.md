@@ -13,7 +13,7 @@ Larvatus is a Firefox and Chromium extension for Stalwart masked addresses, publ
 ## Commands
 
 ```sh
-node --test test/         # unit tests, no install needed (Node 22.7+)
+node --test test/*.test.mjs   # unit tests, no install needed. Name the files: Node 22 runs a bare directory as a module
 node scripts/build.mjs    # dist/firefox, dist/chrome, both zips, and larvatus.xpi
 npm --prefix smoke install && node smoke/chrome.mjs   # end-to-end test of the Chrome build
 node smoke/screenshots.mjs  # store screenshots (1280x800) into store/screenshots/, same browser setup

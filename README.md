@@ -45,7 +45,7 @@ Stalwart accepts custom prefixes of up to 64 ASCII letters, digits, and undersco
 The extension uses plain HTML, CSS, and JavaScript with no dependencies. `extension/manifest.json` is the Firefox manifest, so Firefox loads the folder directly. Run the tests with Node.js 22.7 or later.
 
 ```sh
-node --test test/
+node --test test/*.test.mjs
 ```
 
 Build both store packages from the project root. This also refreshes `larvatus.xpi`.
