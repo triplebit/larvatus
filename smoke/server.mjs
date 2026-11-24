@@ -28,9 +28,10 @@ const PAGE = `<!doctype html><meta charset="utf-8"><title>Sign up</title>
 
 // A generic sign-up page for a fictional shop, for store screenshots: screenshots.mjs serves it in place of
 // the network, and the apps' screenshots open it at https://wrenfield.localhost:8443/join (any .localhost name
-// is this machine, and the certificate covers that one). The viewport and the narrower card are for phones, where
-// the card also sits at the top with the email field first, high enough that Safari does not scroll it under the status bar when the keyboard opens; maximum-scale keeps iOS Safari from zooming in
-// on the 15px fields when one is focused.
+// is this machine, and the certificate covers that one). The viewport and the narrower card are for phones.
+// There the card sits at the top with the email field first, high enough that Safari does not scroll it
+// under the status bar when the keyboard opens. maximum-scale stops iOS Safari zooming in on the 15px
+// fields when one is focused.
 export const SIGNUP = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>Join Wrenfield Books</title>
 <style>
   body { margin: 0; min-height: 100vh; display: grid; place-items: center; font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1f2a2e; background: #eef2f0; }

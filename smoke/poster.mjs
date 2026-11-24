@@ -62,7 +62,7 @@ export const copy = (style, headline, sub, className = "") =>
 
 // A capture from screenshots.mjs placed at (x, y) and scaled. at() maps a point of one of its measured
 // elements (fx, fy as fractions of its rect) to poster coordinates.
-// pad (CSS pixels on the poster) frames the capture above and below in the popup's page colour.
+// pad (CSS pixels on the poster) frames the capture above and below in the popup's page color.
 export function shot(capture, { x, y, scale = 1, pad = 0, style = "", className = "ui" }) {
   return {
     html: `<div class="shot ${className}" style="left: ${x}px; top: ${y}px; width: ${capture.width * scale}px; padding: ${pad}px 0; background: #f5f2ec; ${style}"><img src="${capture.src}"></div>`,

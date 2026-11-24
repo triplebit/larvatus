@@ -30,7 +30,7 @@ This writes `dist/larvatus-<version>-firefox.zip` and `dist/larvatus-<version>-c
 2. Distribution: **On this site**. ("On your own" only signs the file for self-hosting.)
 3. Upload `larvatus-<version>-firefox.zip`. The validator runs; CI already runs the same check with `web-ext lint`.
 4. Source code: answer **No**. Nothing is bundled, minified or generated; the package is a copy of `extension/`.
-5. Listing: name, summary, description, category (Privacy & Security fits), licence, support email or site, and the privacy policy.
+5. Listing: name, summary, description, category (Privacy & Security fits), license, support email or site, and the privacy policy.
 6. Data collection: the manifest declares `authenticationInfo` and `personallyIdentifyingInfo` as required, which is what Firefox shows people at install, and `browsingActivity` as optional. Firefox does not show optional data types at install; Larvatus asks for `browsingActivity` at run time, when the person chooses "Site name" as the default prefix in Settings, and sends nothing about the sites visited without it. It stays granted until withdrawn in the add-on manager. Keep the privacy policy consistent with this.
 7. Notes for reviewers: say that testing needs a Stalwart 1.0.3 or later server with OAuth and public client registration, and give a test server address and account if you can.
 8. Submit.

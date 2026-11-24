@@ -82,7 +82,7 @@ export async function prepareAuthorization(origin, redirect) {
       grant_types: ["authorization_code", "refresh_token"], response_types: ["code"],
       token_endpoint_auth_method: "none", scope: SETTINGS })
   });
-  if (!client.client_id) throw new Error("Stalwart did not register the extension.");
+  if (!client.client_id) throw new Error("Stalwart did not register Larvatus.");
   const state = base64url(crypto.getRandomValues(new Uint8Array(32)));
   const verifier = base64url(crypto.getRandomValues(new Uint8Array(48)));
   const challenge = base64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));

@@ -109,7 +109,7 @@
     try {
       const response = await browser.runtime.sendMessage({ action: "field-create" });
       if (!response || response.error) {
-        const note = response?.type === "overQuota" ? " This quota can be configured by a Stalwart administrator in the admin dashboard." : "";
+        const note = response?.type === "overQuota" ? " A Stalwart administrator can change this quota in the admin dashboard." : "";
         throw new Error((response?.error || "Larvatus could not create an address.") + note);
       }
       fill(input, response.value.email);

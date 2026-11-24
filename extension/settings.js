@@ -28,7 +28,7 @@ byId("connect-form").addEventListener("submit", async event => {
     button.disabled = true;
     notice("Waiting for Stalwart sign-in…");
     // Chromium answers before the sign-in window is done; the storage listener below takes over.
-    if (await signingIn === null) return notice("Finish signing in in the Stalwart window.");
+    if (await signingIn === null) return notice("Finish signing in through the Stalwart window.");
     await display();
     notice();
   } catch (error) {

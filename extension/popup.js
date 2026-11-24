@@ -24,7 +24,7 @@ function copyable(button, email) {
   return button;
 }
 
-const QUOTA_NOTE = "This quota can be configured by a Stalwart administrator in the admin dashboard.";
+const QUOTA_NOTE = "A Stalwart administrator can change this quota in the admin dashboard.";
 
 // Stalwart addresses look like prefix.randomsuffix@domain; prefixes cannot contain dots.
 const prefixOf = email => email.toLowerCase().split("@")[0].split(".")[0];
@@ -43,12 +43,12 @@ function renderSpotlight() {
     return;
   }
   if (justCreated) {
-    title = "New alias created, click to copy:";
+    title = "Address created. Click to copy:";
     emails = [justCreated];
   } else {
     const prefix = byId("prefix").value.trim().toLowerCase();
     emails = prefix && loaded ? aliases.filter(alias => prefixOf(alias.email) === prefix).map(alias => alias.email) : [];
-    title = emails.length > 1 ? emails.length + " aliases with this prefix already exist:" : "An alias with this prefix already exists:";
+    title = emails.length > 1 ? emails.length + " addresses already use this prefix:" : "An address already uses this prefix:";
   }
   box.hidden = !emails.length;
   box.classList.toggle("created", !!justCreated);
@@ -106,7 +106,7 @@ function confirmDelete(row, alias) {
   const [yes, cancel] = box.querySelectorAll("button");
   remove.setAttribute("aria-label", "Delete " + alias.email);
   text.id = "confirm-" + alias.id;
-  text.textContent = "Delete " + alias.email + "? Mail sent to it will no longer be delivered. This cannot be undone.";
+  text.textContent = "Delete " + alias.email + "? It will stop receiving mail. This cannot be undone.";
   box.setAttribute("aria-labelledby", text.id);
   remove.onclick = () => { box.hidden = false; cancel.focus(); };
   cancel.onclick = () => { box.hidden = true; remove.focus(); };
@@ -213,7 +213,7 @@ async function showSignInState() {
   const state = await send("signin-state");
   if (state.origin && !byId("server").value) byId("server").value = new URL(state.origin).host;
   if (state.error) notice(state.error, true);
-  else if (state.active) notice("Finish signing in in the Stalwart window.");
+  else if (state.active) notice("Finish signing in through the Stalwart window.");
 }
 
 async function start() {

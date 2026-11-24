@@ -75,7 +75,7 @@ async function authorized(connection, run) {
   }
 }
 
-// The email field button: an address described by and associated with the tab's site, with the prefix chosen in Settings.
+// The email field button: creates an address with the prefix chosen in Settings, and the tab's site as its description and Associated Domain.
 // Without permission to use the site, nothing about it is sent: a site-name prefix becomes a random one.
 async function createForField(sender) {
   const settings = await loadSettings();

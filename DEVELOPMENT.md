@@ -4,6 +4,7 @@ Larvatus is a Firefox and Chromium extension for Stalwart masked addresses, publ
 
 ## How to work here
 
+- Read this file before changing the code.
 - **Work is generally done by Opus agents, orchestrated by the main session.** Planning, decisions and discussion with the owner happen in the main session. It briefs Opus subagents to do the coding, sets each one's reasoning effort to fit the task, reviews and tests what they return, and commits. Subagents do not commit. Small edits and doc updates are fine in the main session.
 - Smallest complete change. The owner follows the "ponytail" principles (https://github.com/DietrichGebert/ponytail/blob/main/AGENTS.md): use what the codebase or platform already has, no speculative options or wrappers, one small test for new non-trivial logic, and end replies with what you skipped or did not check.
 - The extension has no dependencies and no build step for Firefox. Keep it that way. Only `smoke/` has a `package.json`.

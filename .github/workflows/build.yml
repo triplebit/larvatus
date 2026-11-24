@@ -13,7 +13,7 @@ on:
 permissions:
   contents: read
 
-# The triplebit organisation only runs actions pinned to a full commit SHA.
+# The triplebit organization only runs actions pinned to a full commit SHA.
 jobs:
   build:
     runs-on: ubuntu-latest
