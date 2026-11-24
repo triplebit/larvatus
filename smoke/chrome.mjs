@@ -54,7 +54,7 @@ try {
   // Signed out: Settings shows the sign-in form and locks the other cards.
   const settings = await open(base + "/settings.html");
   await until("the sign-in form", () => settings.evaluate(() => !document.getElementById("signin").hidden));
-  assert.deepEqual(await settings.evaluate(() => [...document.querySelectorAll(".needs-account")].map(card => card.inert)), [true, true]);
+  assert.deepEqual(await settings.evaluate(() => [...document.querySelectorAll(".needs-account")].map(card => card.hidden)), [true]);
 
   // Sign in. The messages are what beginSignIn() sends once the permission prompt is answered.
   await settings.evaluate(async origin => {
@@ -91,7 +91,8 @@ try {
   assert.equal(server.aliases.length, 1);
   assert.equal(await site.$eval("#signup-email", input => input.value), alias.email);
   assert.equal(await site.evaluate(() => pageState()), alias.email);
-  assert.equal(alias.email, "localhost.k3x9q2@example.org");
+  // The default prefix is one random character; Chromium still sends the site as description and Associated Domain.
+  assert.match(alias.email, /^[a-z0-9]\.k3x9q2@example\.org$/);
   assert.equal(alias.description, "Created on localhost");
   assert.equal(alias.forDomain, origin);
 

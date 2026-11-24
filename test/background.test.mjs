@@ -41,4 +41,10 @@ test("the field button sends nothing about the site unless browsingActivity is g
   granted = ["browsingActivity"];
   assert.deepEqual(await fieldCreate(t), { enable: true, emailPrefix: "example",
     description: "Created on shop.example.com", forDomain: "https://shop.example.com" });
+
+  // The permission, not the prefix choice, decides what is sent about the site.
+  stored.settings.fieldPrefix = "random";
+  const { emailPrefix, ...rest } = await fieldCreate(t);
+  assert.match(emailPrefix, /^[a-z0-9]$/);
+  assert.deepEqual(rest, { enable: true, description: "Created on shop.example.com", forDomain: "https://shop.example.com" });
 });

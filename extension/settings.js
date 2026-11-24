@@ -11,12 +11,9 @@ async function display() {
   current = await send("status");
   byId("signin").hidden = !!current;
   byId("connected").hidden = !current;
-  // The other settings and the donation ask wait for a connected account.
+  // The autofill settings and the donation ask wait for a connected account.
   byId("support").hidden = !current;
-  for (const card of document.querySelectorAll(".needs-account")) {
-    card.inert = !current;
-    card.classList.toggle("inactive", !current);
-  }
+  for (const card of document.querySelectorAll(".needs-account")) card.hidden = !current;
   if (current) {
     byId("user").textContent = current.username;
     byId("host").textContent = current.origin;
@@ -73,33 +70,22 @@ async function showOptions() {
   setSwitch("button-outside", settings.buttonOutside);
   byId("outside-option").classList.toggle("dimmed", !fieldButton);
   byId("button-outside").disabled = !fieldButton;
-  byId("prefix-option").classList.toggle("dimmed", !fieldButton);
-  for (const radio of document.getElementsByName("field-prefix")) {
-    radio.checked = radio.value === settings.fieldPrefix;
-    radio.disabled = !fieldButton;
-  }
-  byId("custom-prefix").hidden = settings.fieldPrefix !== "custom";
-  byId("custom-prefix").disabled = !fieldButton;
+  // Without permission to use the site (withdrawn in Firefox's add-on manager), Site name acts as Random.
+  const prefix = settings.fieldPrefix === "site" && !await siteAllowed() ? "random" : settings.fieldPrefix;
+  for (const radio of document.getElementsByName("field-prefix")) radio.checked = radio.value === prefix;
+  byId("custom-prefix").hidden = prefix !== "custom";
   if (document.activeElement !== byId("custom-prefix")) byId("custom-prefix").value = settings.fieldCustomPrefix;
   checkCustomPrefix();
   for (const radio of document.getElementsByName("theme")) radio.checked = radio.value === settings.theme;
-  // The permission itself is this setting. Browsers that offer no choice always use the site.
-  if (siteChoice()) {
-    byId("site-option").hidden = false;
-    setSwitch("site-data", await siteAllowed());
-  }
 }
 
 byId("field-button").addEventListener("click", () => {
   const turnOn = byId("field-button").getAttribute("aria-checked") !== "true";
   // Request in the click itself: Firefox only shows permission prompts for a user action.
-  // One prompt also asks to use the site, which Firefox grants with website access or not at all.
-  const request = { origins: FIELD_ORIGINS, ...siteChoice() && SITE_DATA };
-  const granted = turnOn ? browser.permissions.request(request) : Promise.resolve(true);
+  const granted = turnOn ? browser.permissions.request({ origins: FIELD_ORIGINS }) : Promise.resolve(true);
   (async () => {
     autofillNotice();
-    // Website access is all the button needs, and may have been granted before.
-    if (!await granted && !await browser.permissions.contains({ origins: FIELD_ORIGINS })) {
+    if (!await granted) {
       autofillNotice("The button needs access to websites to find their email fields.", true);
       return;
     }
@@ -108,16 +94,12 @@ byId("field-button").addEventListener("click", () => {
   })().catch(error => autofillNotice(error.message, true));
 });
 
-byId("site-data").addEventListener("click", () => {
-  const turnOn = byId("site-data").getAttribute("aria-checked") !== "true";
-  const changed = turnOn ? browser.permissions.request(SITE_DATA) : browser.permissions.remove(SITE_DATA);
-  autofillNotice();
-  changed.then(done => done || autofillNotice("Your browser needs permission to use the site’s address.", true),
-    error => autofillNotice(error.message, true));
-});
-// The switches follow the permissions, including changes made in the browser's add-on manager.
-browser.permissions.onAdded.addListener(() => showOptions().catch(error => autofillNotice(error.message, true)));
-browser.permissions.onRemoved.addListener(() => showOptions().catch(error => autofillNotice(error.message, true)));
+// The options follow the permissions, including changes made in the browser's add-on manager.
+// While Site name is asking, its own handler redraws once the choice is saved; redrawing before that flickers back.
+let asking = false;
+const permissionsChanged = () => asking || showOptions().catch(error => autofillNotice(error.message, true));
+browser.permissions.onAdded.addListener(permissionsChanged);
+browser.permissions.onRemoved.addListener(permissionsChanged);
 
 byId("button-outside").addEventListener("click", () => {
   saveSettings({ buttonOutside: byId("button-outside").getAttribute("aria-checked") !== "true" })
@@ -137,12 +119,21 @@ function checkCustomPrefix() {
   return valid ? value : null;
 }
 
+// Where the browser lets people decline using the site, Site name asks for it. It stays granted until
+// withdrawn in the browser's add-on manager. Ask in the change itself: Firefox only prompts for a user action.
 for (const radio of document.getElementsByName("field-prefix")) {
   radio.addEventListener("change", () => {
-    byId("custom-prefix").hidden = radio.value !== "custom";
-    checkCustomPrefix();
-    if (radio.value === "custom") byId("custom-prefix").focus();
-    saveSettings({ fieldPrefix: radio.value }).catch(error => autofillNotice(error.message, true));
+    const allowed = radio.value === "site" && siteChoice() ? browser.permissions.request(SITE_DATA) : Promise.resolve(true);
+    notice();
+    asking = true;
+    (async () => {
+      if (await allowed) await saveSettings({ fieldPrefix: radio.value });
+      else notice("Site name needs permission to use the site’s address.", true);
+      // Puts the previous choice back when permission was declined.
+      asking = false;
+      await showOptions();
+      if (radio.value === "custom") byId("custom-prefix").focus();
+    })().catch(error => notice(error.message, true)).finally(() => { asking = false; });
   });
 }
 
@@ -150,7 +141,7 @@ let prefixTimer = 0;
 byId("custom-prefix").addEventListener("input", () => {
   const value = checkCustomPrefix();
   clearTimeout(prefixTimer);
-  if (value !== null) prefixTimer = setTimeout(() => saveSettings({ fieldCustomPrefix: value }).catch(error => autofillNotice(error.message, true)), 300);
+  if (value !== null) prefixTimer = setTimeout(() => saveSettings({ fieldCustomPrefix: value }).catch(error => notice(error.message, true)), 300);
 });
 
 for (const radio of document.getElementsByName("theme")) {

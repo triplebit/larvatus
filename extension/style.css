@@ -23,12 +23,12 @@
   --switch-off-line: #c8c2b6;
   --ok: #2f6b4a;
 }
-/* Stalwart dashboard dark palette */
+/* Stalwart dashboard dark palette, except the accent: buttons keep the logo's red and white text in both themes. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme=light]) {
     color-scheme: dark;
     --page: #131313; --text: #f8f8fa; --surface: #1f1f21; --subtle: #2a292e; --hover: #333238;
-    --accent: #ff5b7e; --accent-hover: #ff7894; --on-accent: #1a0d12; --accent-soft: #2f1921; --accent-line: #4a2230; --accent-ink: #f4839c;
+    --accent-soft: #2f1921; --accent-line: #4a2230; --accent-ink: #f4839c;
     --line: #2c2b30; --field: #3a393f; --placeholder: #8a898e; --muted: #b8b7bc;
     --switch-off: #3a393f; --switch-off-line: #4a4950; --ok: #6cbd8f;
   }
@@ -36,7 +36,7 @@
 :root[data-theme=dark] {
   color-scheme: dark;
   --page: #131313; --text: #f8f8fa; --surface: #1f1f21; --subtle: #2a292e; --hover: #333238;
-  --accent: #ff5b7e; --accent-hover: #ff7894; --on-accent: #1a0d12; --accent-soft: #2f1921; --accent-line: #4a2230; --accent-ink: #f4839c;
+  --accent-soft: #2f1921; --accent-line: #4a2230; --accent-ink: #f4839c;
   --line: #2c2b30; --field: #3a393f; --placeholder: #8a898e; --muted: #b8b7bc;
   --switch-off: #3a393f; --switch-off-line: #4a4950; --ok: #6cbd8f;
 }
@@ -135,7 +135,7 @@ li { border-top: 1px solid var(--line); padding: 10px 4px 9px 1px; }
 .option .switch { grid-row: span 2; margin-top: 2px; }
 .option strong { font-weight: 600; }
 .option p { margin: 0; font-size: 13px; }
-.option.dimmed strong, .option.dimmed p, .option.dimmed .choices { opacity: .6; }
+.option.dimmed strong, .option.dimmed p { opacity: .6; }
 .switch:disabled { cursor: default; }
 .option.plain { grid-template-columns: 1fr; }
 .option-notice { margin: 6px 0 0 !important; font-size: 12px; }
@@ -152,9 +152,9 @@ li { border-top: 1px solid var(--line); padding: 10px 4px 9px 1px; }
 .choices { display: grid; gap: 6px; margin-top: 10px; }
 .choices label { font-size: 14px; font-weight: 400; gap: 8px; align-items: center; cursor: pointer; }
 input[type=radio] { width: auto; margin: 0; accent-color: var(--accent); }
+#prefix-option { margin-top: 16px; padding-bottom: 0; border-top: 1px solid var(--line); }
 #custom-prefix { max-width: 260px; margin-top: 8px; }
 #custom-prefix[aria-invalid=true] { border-color: var(--accent); }
-.card.inactive { opacity: .45; filter: saturate(.4); }
 .card header:has(+ [hidden]) { border-bottom: 0; }
 .text-link { grid-column: span 2; justify-self: center; margin-top: 2px; padding: 2px 4px; border: 0; background: transparent; color: var(--muted); font-size: 12px; text-decoration: underline; text-underline-offset: 2px; }
 .text-link:hover { background: transparent; color: var(--accent-ink); }

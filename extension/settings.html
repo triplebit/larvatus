@@ -14,7 +14,7 @@
   </section>
 
   <section class="card group" aria-labelledby="account-title">
-    <h2 id="account-title">Account</h2>
+    <h2 id="account-title">General</h2>
     <div id="signin" hidden>
       <h1>Connect to Stalwart</h1>
       <p>Enter your mail server to sign in and manage your masked addresses.</p>
@@ -27,6 +27,16 @@
     <div id="connected" hidden>
       <strong id="user"></strong><div class="muted" id="host"></div>
       <button id="disconnect">Disconnect account</button>
+      <div class="option plain" id="prefix-option">
+        <strong id="prefix-label">Default prefix for addresses</strong>
+        <div class="choices" role="radiogroup" aria-labelledby="prefix-label">
+          <label><input type="radio" name="field-prefix" value="site"> Site name</label>
+          <label><input type="radio" name="field-prefix" value="random"> Random</label>
+          <label><input type="radio" name="field-prefix" value="custom"> Custom</label>
+        </div>
+        <input id="custom-prefix" hidden maxlength="64" placeholder="Your prefix" spellcheck="false" autocomplete="off" aria-label="Custom prefix" aria-describedby="custom-prefix-help">
+        <p id="custom-prefix-help" class="option-notice" role="status"></p>
+      </div>
     </div>
     <p id="notice" role="status"></p>
   </section>
@@ -43,25 +53,10 @@
       <strong id="button-outside-label">Place the button outside the field</strong>
       <p id="button-outside-help">Show the button next to the email field instead of inside it. This avoids overlapping with buttons from password managers like 1Password or Bitwarden.</p>
     </div>
-    <div class="option plain" id="prefix-option">
-      <strong id="prefix-label">Prefix for autofilled addresses</strong>
-      <div class="choices" role="radiogroup" aria-labelledby="prefix-label">
-        <label><input type="radio" name="field-prefix" value="site"> Site name <small>github for github.com</small></label>
-        <label><input type="radio" name="field-prefix" value="random"> Random <small>one random character</small></label>
-        <label><input type="radio" name="field-prefix" value="custom"> Custom</label>
-      </div>
-      <input id="custom-prefix" hidden maxlength="64" placeholder="Your prefix" spellcheck="false" autocomplete="off" aria-label="Custom prefix" aria-describedby="custom-prefix-help">
-      <p id="custom-prefix-help" class="option-notice" role="status"></p>
-    </div>
-    <div class="option" id="site-option" hidden>
-      <button type="button" role="switch" class="switch" id="site-data" aria-checked="false" aria-labelledby="site-data-label" aria-describedby="site-data-help"><span></span></button>
-      <strong id="site-data-label">Suggest a prefix and description from the current site</strong>
-      <p id="site-data-help">The site’s address is then stored with the masked address on your mail server.</p>
-    </div>
     <p id="autofill-notice" class="option-notice" role="status"></p>
   </section>
 
-  <section class="card group needs-account" aria-labelledby="appearance-title">
+  <section class="card group" aria-labelledby="appearance-title">
     <h2 id="appearance-title">Appearance</h2>
     <div class="option plain">
       <strong id="theme-label">Theme</strong>

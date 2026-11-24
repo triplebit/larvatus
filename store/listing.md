@@ -26,14 +26,14 @@ Larvatus creates and manages masked addresses on your own Stalwart mail server. 
 In the toolbar popup you can:
 - See your masked addresses, newest first, with their descriptions and creation dates.
 - Search by address or description.
-- Create an address with an optional prefix and description. On a website, both can be suggested from the site, for example "github" and "Created on github.com", and you can edit or clear them. In some browsers suggestions are off until you turn on "Suggest a prefix and description from the current site" in Settings. Leave the prefix blank for one random letter or digit. Your server generates the rest of the address.
+- Create an address with an optional prefix and description. Leave the prefix blank for one random letter or digit, or choose in Settings to start with the site's name (for example "github") or your own prefix. On a website, the description is suggested, for example "Created on github.com", and you can edit or clear it. In some browsers this is off until you choose the site's name as the prefix in Settings. Your server generates the rest of the address.
 - Click an address to copy it.
 - Switch an address off, which makes your server reject mail sent to it, and on again to restore delivery.
 - Delete an address after confirming. Mail sent to it is no longer delivered.
 - Open an address on your server's account page to edit it there.
 
 Optional button on email fields:
-Turn on "Show Larvatus button on email fields" in Settings to add a button to email fields on sign-up forms. Clicking it creates a masked address for the site and fills it in. The button skips forms that look like sign-in forms. In Settings you choose the prefix it uses (the site's name, one random character, or your own), and whether the button sits inside or beside the field so it does not cover password manager buttons. The button is off until you turn it on. Without permission to use the site's address, it creates the address with a random prefix and no description.
+Turn on "Show Larvatus button on email fields" in Settings to add a button to email fields on sign-up forms. Clicking it creates a masked address for the site and fills it in. The button skips forms that look like sign-in forms. It uses the default prefix from Settings (one random character, the site's name, or your own), and you choose whether it sits inside or beside the field so it does not cover password manager buttons. The button is off until you turn it on. Without permission to use the site's address, it creates the address with no description and, instead of the site's name, a random prefix.
 
 Requirements:
 - Stalwart 1.0.3 or later, reachable over HTTPS, with its built-in OAuth server and public client registration enabled.
@@ -45,14 +45,14 @@ Enter your server's address and choose "Sign in with Stalwart". You sign in on y
 Permissions:
 - Access to your mail server: asked when you sign in, for the server you enter and no other.
 - Access to websites: asked only when you turn on the email field button. It lets Larvatus add the button to email fields. If you never turn the button on, Larvatus never asks for it.
-- Use of the site's address (some browsers): asked when you turn on suggestions or the email field button in Settings. Without it, Larvatus sends nothing about the sites you visit to your server. You can turn it off again in Settings or in your browser's add-on settings.
+- Use of the site's address (some browsers): asked when you choose the site's name as the default prefix in Settings. Without it, Larvatus sends nothing about the sites you visit to your server. Once allowed, it stays allowed until you turn it off in your browser's add-on settings.
 - In some browsers, sign-in also asks for access to 127.0.0.1, the local address your server sends you back to after you sign in.
-- Current tab: when you open the popup, Larvatus reads the current tab's address to suggest a prefix and description, if suggestions are on.
+- Current tab: when you open the popup, Larvatus reads the current tab's address to suggest a description and, if chosen, the site's name as prefix. In some browsers only once you allow use of the site's address.
 - Storage: keeps your server address, sign-in tokens and settings in your browser.
 - Identity and scripting: used for the sign-in redirect and to add the email field button.
 
 Privacy:
-Larvatus talks only to the Stalwart server you sign in to. It has no servers of its own, no analytics and no tracking, and sends nothing to Triplebit or anyone else. Your sign-in tokens and settings stay in your browser. Your address list is fetched from your server and kept only while the popup is open, and search runs in your browser. When you create an address, its description is stored on your server, and an address made with the email field button also stores the site's address (for example https://github.com) as its associated domain. In browsers that let you choose, the site's address is only used and sent once you allow it in Settings. The button looks at a page's form fields in your browser to decide where to appear; it does not read or send page contents.
+Larvatus talks only to the Stalwart server you sign in to. It has no servers of its own, no analytics and no tracking, and sends nothing to Triplebit or anyone else. Your sign-in tokens and settings stay in your browser. Your address list is fetched from your server and kept only while the popup is open, and search runs in your browser. When you create an address, its description is stored on your server, and an address made with the email field button also stores the site's address (for example https://github.com) as its associated domain. In browsers that let you choose, the site's address is only used and sent once you allow it. The button looks at a page's form fields in your browser to decide where to appear; it does not read or send page contents.
 
 Privacy policy: https://larvatus.net/privacy/
 Website: https://larvatus.net/
@@ -72,9 +72,9 @@ Screenshot captions (the files are 1280x800, from the fake test server):
 |---|---|
 | `1-popup.png` | Your masked addresses, newest first, with search and a form for new ones |
 | `1-popup-dark.png` | The popup in dark mode |
-| `2-create.png` | On a website, the prefix and description are suggested from the site |
+| `2-create.png` | Creating an address with a prefix and description |
 | `3-field-button.png` | The optional button on a sign-up email field fills in a new masked address |
-| `4-settings.png` | Settings: your account, the email field button and its options |
+| `4-settings.png` | Settings: your account and default prefix, and the email field button |
 | `5-delete.png` | Deleting an address asks you to confirm first |
 
 ## 4. AMO: Notes for reviewers
@@ -99,9 +99,9 @@ Then: create an address from the popup, copy it, switch it off and on, delete it
 Why host permissions are optional:
 - The mail server is chosen by the person, so it cannot be listed in the manifest. Access is requested at sign-in for that server's origin only.
 - The email field button is off by default. Turning it on in Settings ("Show Larvatus button on email fields") requests "https://*/*"; only then does the background script register content.js and fields.js with scripting.registerContentScripts. Turning it off, or removing the permission, unregisters them. To test it, turn it on and open any sign-up form with an email field; clicking the button creates an address whose description is "Created on <hostname>" and whose forDomain is the page origin, both sent to the person's own Stalwart server.
-- activeTab is used only to read the current tab's URL when the popup opens, to suggest a prefix and description, and only while browsingActivity is granted.
+- activeTab is used only to read the current tab's URL when the popup opens, to suggest a description (and the site's name as prefix if chosen in Settings), and only while browsingActivity is granted.
 
-Data collection: authenticationInfo (OAuth tokens, sent only to the person's own server) and personallyIdentifyingInfo (their account name and masked addresses) are required. browsingActivity is optional: the current site's hostname (in the suggested description) and origin (as forDomain, from the field button) are sent to the person's own Stalwart server only while it is granted. It is requested with permissions.request from a click in Settings: by the switch "Suggest a prefix and description from the current site", and together with "https://*/*" in one prompt when the email field button is turned on. Without it, the popup does not read the active tab and the field button sends a random one-character prefix with no description and no forDomain (enforced in background.js, createForField). The switch follows permissions.onAdded/onRemoved, so revoking it in about:addons is reflected.
+Data collection: authenticationInfo (OAuth tokens, sent only to the person's own server) and personallyIdentifyingInfo (their account name and masked addresses) are required. browsingActivity is optional: the current site's hostname (in the suggested description) and origin (as forDomain, from the field button) are sent to the person's own Stalwart server only while it is granted. It is requested with permissions.request when the person chooses "Site name" as the default prefix in Settings, and is not removed when they choose another prefix; it is withdrawn in about:addons. Without it, the popup does not read the active tab and the field button sends no description and no forDomain, and a random one-character prefix in place of the site's name (enforced in background.js, createForField). Settings follows permissions.onAdded/onRemoved, so after revoking it in about:addons "Site name" shows as "Random".
 
 Source: the package is the unmodified contents of the extension/ folder of https://github.com/triplebit/maskedemail-extension. Nothing is bundled, minified or generated, and there are no dependencies. web-ext lint reports one warning about innerHTML in content.js; it is set from constant strings (the button's icon and style), never from page or server data.
 ```
@@ -128,7 +128,7 @@ Used only for identity.getRedirectURL(), whose extension id becomes part of the 
 
 `activeTab`:
 ```
-When the user opens the popup, the extension reads the active tab's URL to suggest a prefix and description for a new address, such as "github" and "Created on github.com". The user can edit or clear both.
+When the user opens the popup, the extension reads the active tab's URL to suggest a description for a new address, such as "Created on github.com", and the site's name ("github") as prefix if the user chose that in Settings. The user can edit or clear both.
 ```
 
 `scripting`:

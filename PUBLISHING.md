@@ -7,7 +7,7 @@ The publisher on both stores is **Triplebit Corporation**. Store forms change of
 1. **Privacy policy page.** Both stores need a public URL: <https://larvatus.net/privacy/> (its source is `site/privacy/index.html` in the apps' repository; check it is live). It should say what the extension handles and where it goes:
    - the address of your Stalwart server, and OAuth tokens for it, kept in the browser's local extension storage;
    - your masked addresses and their descriptions, read from and written to that server only;
-   - the address of the current tab, used to suggest a prefix and description; when the email field button creates an address, the site's origin is stored with it on your server as its Associated Domain. In Firefox this is optional (the browsing activity data permission) and off until the person turns it on;
+   - the address of the current tab, used to suggest a description and, if chosen, the site's name as prefix; when the email field button creates an address, the site's origin is stored with it on your server as its Associated Domain. In Firefox this is optional (the browsing activity data permission) and off until the person chooses Site name as the default prefix;
    - nothing is sent to Triplebit or any third party, and there is no analytics.
 2. **Screenshots** of the popup (list, create, delete confirmation) and of the button on a sign-up email field. Chrome needs at least one at 1280×800 or 640×400.
    `node smoke/screenshots.mjs` (see DEVELOPMENT.md) writes these to `store/screenshots/` at 1280×800 from the fake server.
@@ -31,7 +31,7 @@ This writes `dist/larvatus-<version>-firefox.zip` and `dist/larvatus-<version>-c
 3. Upload `larvatus-<version>-firefox.zip`. The validator runs; CI already runs the same check with `web-ext lint`.
 4. Source code: answer **No**. Nothing is bundled, minified or generated; the package is a copy of `extension/`.
 5. Listing: name, summary, description, category (Privacy & Security fits), licence, support email or site, and the privacy policy.
-6. Data collection: the manifest declares `authenticationInfo` and `personallyIdentifyingInfo` as required, which is what Firefox shows people at install, and `browsingActivity` as optional. Firefox does not show optional data types at install; Larvatus asks for `browsingActivity` at run time, when the person turns on "Suggest a prefix and description from the current site" or the email field button in Settings, and sends nothing about the sites visited without it. Keep the privacy policy consistent with this.
+6. Data collection: the manifest declares `authenticationInfo` and `personallyIdentifyingInfo` as required, which is what Firefox shows people at install, and `browsingActivity` as optional. Firefox does not show optional data types at install; Larvatus asks for `browsingActivity` at run time, when the person chooses "Site name" as the default prefix in Settings, and sends nothing about the sites visited without it. It stays granted until withdrawn in the add-on manager. Keep the privacy policy consistent with this.
 7. Notes for reviewers: say that testing needs a Stalwart 1.0.3 or later server with OAuth and public client registration, and give a test server address and account if you can.
 8. Submit.
 
@@ -47,7 +47,7 @@ The add-on id `extension@larvatus.net` is fixed from the first upload. Changing 
    - Permission justifications:
      - `storage`: keeps the server address, sign-in tokens and settings on the device.
      - `identity`: gives the extension its sign-in redirect address.
-     - `activeTab`: reads the current tab's address when the popup opens, to suggest a prefix and description.
+     - `activeTab`: reads the current tab's address when the popup opens, to suggest a description and, if chosen in Settings, the site's name as prefix.
      - `scripting`: adds the button to email fields, only after the person turns that option on.
      - Optional host access `https://*/*`: asked for when the person turns on the email field button, and for the person's own mail server at sign-in.
      - Optional host access `http://127.0.0.1/*`: asked for at sign-in. Stalwart only accepts loopback redirects for public clients, so the extension reads the sign-in tab's redirect address.

@@ -194,14 +194,17 @@ byId("composer").onsubmit = event => {
   });
 };
 
-// Prefill from the active tab. defaultValue makes the form's reset() restore these after each create.
+// Prefill the prefix chosen in Settings and, if the site may be used, the active tab's description.
+// A blank prefix is random. defaultValue makes the form's reset() restore these after each create.
 async function prefill() {
-  if (!await siteAllowed()) return;
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  const defaults = tab?.url && siteDefaults(tab.url);
-  if (!defaults) return;
-  byId("prefix").defaultValue = defaults.prefix;
-  byId("description").defaultValue = defaults.description;
+  const settings = await loadSettings();
+  if (settings.fieldPrefix === "custom") byId("prefix").defaultValue = settings.fieldCustomPrefix;
+  if (await siteAllowed()) {
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    const defaults = tab?.url && siteDefaults(tab.url);
+    if (defaults && settings.fieldPrefix === "site") byId("prefix").defaultValue = defaults.prefix;
+    if (defaults) byId("description").defaultValue = defaults.description;
+  }
   renderSpotlight();
 }
 
