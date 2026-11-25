@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Triplebit Corporation
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Extension options, shared by the settings page, the popup and the background script.
 // content.js keeps its own copy of the two field-button defaults because content scripts cannot import modules.
 // fieldPrefix, the default prefix in the popup and for the field button: "site" names addresses after the site,

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Triplebit Corporation
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Adds a Larvatus button to sign-up email fields. Registered by background.js only while the
 // option is on; it still checks the setting so that pages already open stop showing it when turned off.
 (() => {

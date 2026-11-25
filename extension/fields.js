@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Triplebit Corporation
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Field rules for content.js. A classic script (content scripts cannot be modules), so it shares
 // these through a global. The rules work on plain values so they can be tested without a browser.
 // Chromium content scripts only have `chrome`; content.js uses `browser`.

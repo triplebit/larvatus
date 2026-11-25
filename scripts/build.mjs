@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Triplebit Corporation
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Builds the Firefox and Chrome packages from extension/ into dist/.
 //   node scripts/build.mjs
 // extension/manifest.json is the Firefox manifest, so the folder also loads directly in Firefox.

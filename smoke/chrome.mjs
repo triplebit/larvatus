@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Triplebit Corporation
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // End-to-end check of the Chrome build against the fake Stalwart in server.mjs: sign in, turn on
 // the email field button, create an address from a sign-up form, and find it in the popup.
 //   npm --prefix smoke install && node smoke/chrome.mjs

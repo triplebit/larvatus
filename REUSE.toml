@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2026 Triplebit Corporation
+# SPDX-License-Identifier: AGPL-3.0-only
+
+version = 1
+
+# Files that cannot carry a comment header: images, packages and JSON.
+[[annotations]]
+path = ["**/*.png", "**/*.json", "larvatus.xpi"]
+SPDX-FileCopyrightText = "2026 Triplebit Corporation"
+SPDX-License-Identifier = "AGPL-3.0-only"

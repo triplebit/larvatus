@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Triplebit Corporation
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Second-level labels that sit under a country code, e.g. bbc.co.uk or abc.net.au.
 const COUNTRY_SECOND_LEVEL = new Set(["ac", "co", "com", "edu", "gov", "ltd", "net", "ne", "or", "org", "plc", "sch"]);
 

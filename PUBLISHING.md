@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2026 Triplebit Corporation
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 # Publishing Larvatus to the browser stores
 
 The publisher on both stores is **Triplebit Corporation**. Store forms change often, so treat the field names here as a guide and the stores' own help pages as the authority.

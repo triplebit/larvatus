@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Triplebit Corporation
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import "./compat.js";
 import { DEFAULTS, loadSettings } from "./options.js";
 import { hostPattern, isChromium, serverOrigin } from "./stalwart.js";

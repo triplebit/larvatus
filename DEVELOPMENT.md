@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2026 Triplebit Corporation
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 # Development notes
 
 Larvatus is a Firefox and Chromium extension for Stalwart masked addresses, published by Triplebit. The README covers what it does, how to load it and how releases work. This file is the handoff for whoever works on it next, person or agent. It holds what the code and README do not: how to work here, why things are the way they are, and what is still unverified. Keep it current when any of that changes. The owner's global git ignore excludes `CLAUDE.md` and `AGENTS.md`, so this file is the committed copy of the working notes. A local `CLAUDE.md` may exist that imports it.

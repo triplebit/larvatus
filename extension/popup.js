@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Triplebit Corporation
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import "./compat.js";
 import { beginSignIn, byId, notice, send } from "./ui.js";
 import { FIELD_ORIGINS, loadSettings } from "./options.js";

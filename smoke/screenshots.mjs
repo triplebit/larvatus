@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Triplebit Corporation
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Store screenshots of the Chrome build against the fake Stalwart in server.mjs: 1280x800 posters in
 // store/screenshots/, composed in poster.mjs around live 2x captures of the extension, and the Chrome Web Store's
 // two promo tiles in store/promo/. Same browser requirements as chrome.mjs:

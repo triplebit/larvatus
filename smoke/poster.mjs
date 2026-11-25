@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Triplebit Corporation
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Building blocks for the store "posters" in screenshots.mjs: each is a 1280x800 HTML page with a headline,
 // live captures of the extension placed on it, and callouts positioned from the captures' measured rects.
 import { readFileSync } from "node:fs";

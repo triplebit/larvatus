@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2026 Triplebit Corporation
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
 # Larvatus
 
 ![Larvatus: a separate address for every site. Masked email addresses on your own Stalwart mail server.](docs/images/social.png)

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Triplebit Corporation
+// SPDX-License-Identifier: AGPL-3.0-only
+
 const CORE = "urn:ietf:params:jmap:core";
 const STALWART = "urn:stalwart:jmap";
 const SETTINGS = "urn:stalwart:oauth:scope:settings";

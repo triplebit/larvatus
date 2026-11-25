@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Triplebit Corporation
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // A fake Stalwart for smoke/chrome.mjs: OAuth discovery, client registration, authorization and
 // token endpoints, the JMAP session, the x:MaskedEmail methods the test uses, and a page with a
 // sign-up form and a sign-in form. It listens on https://localhost:8443 with a throwaway certificate.

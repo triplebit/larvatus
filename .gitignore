@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Triplebit Corporation
+# SPDX-License-Identifier: AGPL-3.0-only
+
 dist/
 .DS_Store
 node_modules/
